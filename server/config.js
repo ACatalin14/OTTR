@@ -1,6 +1,10 @@
 module.exports = {
-    shouldSeedData: true,
-    dbConnection: "mongodb://127.0.0.1:27017/ottr-db",
+    db: {
+        connection: "mongodb://localhost:27017/ottr-db",
+        secret: "password"
+    },
+    jwtsecret: 'jwt-12wq!@WQ',
+    shouldSeedData: false,
     dataSeeds: {
         numberOfTrains: 15
     }

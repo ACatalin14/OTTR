@@ -1,5 +1,28 @@
 <template>
     <v-app id="ottr-app">
+        <v-dialog
+            v-model="serverErrorDialog"
+            width="300"
+        >
+            <v-card>
+                <v-card-title class="headline mb-1">
+                    <v-icon color="error" class="mr-2">mdi-alert</v-icon>
+                    <strong>Server Error</strong>
+                </v-card-title>
+                <v-card-text class="body-1 py-0"> {{ serverErrorMessage }}</v-card-text>
+                <v-card-actions class="pa-0 ma-0">
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        color="error"
+                        class="pa-0 mr-2 mb-2"
+                        text
+                        @click="serverErrorDialog = false"
+                    >
+                        OK
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
         <v-app-bar
             :clipped-left="$vuetify.breakpoint.lgAndUp"
             app
@@ -23,7 +46,7 @@
                     <v-row no-gutters justify="center" align="center">
                         <router-link to="/">
                             <v-img
-                                :src="require('@/assets/ottr-logo.png')"
+                                :src="require('@/assets/ottr-logo-blue.png')"
                                 class=""
                                 alt="Online Train Ticket Reservation"
                                 contain
@@ -161,12 +184,7 @@
             </v-list>
         </v-navigation-drawer>
         <v-content>
-            <v-container
-                class="fill-height"
-                fluid
-            >
-                <router-view></router-view>
-            </v-container>
+            <router-view @serverError="onServerError"></router-view>
         </v-content>
         <v-footer app style="position: absolute" inset color="black" dark class="flex-column">
             <v-row>
@@ -175,7 +193,6 @@
             <v-row>
                 This is a Bachelor thesis, made for non-commercial use! All that can be seen on this website is of fictional kind.
             </v-row>
-
         </v-footer>
     </v-app>
 </template>
@@ -188,19 +205,22 @@
             source: String,
         },
         data: () => ({
-            dialog: false,
+            serverErrorDialog: false,
+            serverErrorMessage: '',
             drawer: null,
             valueOfDrobdownAppBar: false,
-            userRole: CONSTANTS.USER_ROLES.ADMIN,
+            userRole: CONSTANTS.USER_ROLES.GUEST,
             dropDownAppBarItems: [
                 { title: 'My Account', icon: 'mdi-account-circle', route: '/user/id' },
                 { title: 'Log Out', icon: 'mdi-power', route: '/' }
 
             ],
             items: [
-                { heading: 'Account', displayForUserGroup: CONSTANTS.USER_GROUPS.GUEST_ONLY, displayForScreenSize: 'smAndDown' },
-                { icon: 'mdi-account-plus', text: 'Register', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.GUEST_ONLY, displayForScreenSize: 'smAndDown' },
-                { icon: 'mdi-login', text: 'Login', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.GUEST_ONLY, displayForScreenSize: 'smAndDown' },
+                { heading: 'Account', displayForScreenSize: 'smAndDown' },
+                { icon: 'mdi-account-plus', text: 'Register', route: '/register', displayForUserGroup: CONSTANTS.USER_GROUPS.GUEST_ONLY, displayForScreenSize: 'smAndDown' },
+                { icon: 'mdi-login', text: 'Login', route: '/login', displayForUserGroup: CONSTANTS.USER_GROUPS.GUEST_ONLY, displayForScreenSize: 'smAndDown' },
+                { icon: 'mdi-account', text: 'My Account', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'smAndDown' },
+                { icon: 'mdi-power', text: 'Logout', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'smAndDown' },
                 { heading: 'General' },
                 { icon: 'mdi-home', text: 'Home', route: '/' },
                 { icon: 'mdi-account', text: 'My Account', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED },
@@ -229,8 +249,8 @@
                         { icon: 'mdi-clock-outline', text: 'Departures / Arrivals Station', route: '' },
                     ],
                 },
-                { icon: 'mdi-image-multiple', text: 'Gallery', route: '' },
-                { icon: 'mdi-email', text: 'Contact', route: '' },
+                { icon: 'mdi-image-multiple', text: 'Gallery', route: '/gallery' },
+                { icon: 'mdi-email', text: 'Contact', route: '/contact' },
             ],
         }),
         computed: {
@@ -277,6 +297,11 @@
                 }
 
                 return false;
+            },
+
+            onServerError(errorMessage) {
+                this.serverErrorDialog = true;
+                this.serverErrorMessage = errorMessage;
             }
 
         }

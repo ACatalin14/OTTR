@@ -1,13 +1,25 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
+
 const config = require('./config');
 const seederService = require('./services/seederService');
+
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT || 3000;
 
-mongoose.connect(config.dbConnection, { useNewUrlParser: true});
+mongoose.set("useCreateIndex", true);
+mongoose
+    .connect(config.db.connection, { useNewUrlParser: true})
+    .then(() => {
+        console.log('Conncted to the database.');
+    })
+    .catch(err => {
+        console.log({database_err: err});
+    });
 
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const corsConfig = function(req, res, next) {
@@ -20,11 +32,11 @@ const corsConfig = function(req, res, next) {
 
 app.use(corsConfig);
 
-const apiRoutes = require('./routes/api');
-app.use('/api', apiRoutes);
+const router = require('./routes');
+app.use('/api', router);
 
 if (config.shouldSeedData) {
     seederService.seedData()
 }
 
-app.listen(port, () => console.log(`OTTR Server is listening on port ${port}.`));
+app.listen(PORT, () => console.log(`OTTR Server is listening on port ${PORT}.`));

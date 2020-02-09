@@ -18,6 +18,9 @@ const CONSTANTS = {
             USER_ROLES.GUEST
         ]
     },
+    ERRORS: {
+        1000: 'Login failed. Please check your credentials.',
+    }
 };
 
 export default CONSTANTS;
