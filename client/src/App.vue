@@ -70,7 +70,7 @@
                         </v-btn>
                         <v-btn
                             color="primary"
-                            v-if="userIsGuest"
+                            v-show="userIsGuest"
                             class="mx-4 pl-3 text-capitalize title hidden-sm-and-down"
                             to="login"
                         >
@@ -92,19 +92,19 @@
                                     v-on="on"
                                     :hidden="userIsGuest"
                                 >
-                                    <span class="text-capitalize subtitle-1 hidden-sm-and-down">
-                                        Welcome, Anastasiu Catalin
+                                    <span class="text-capitalize subtitle-1 hidden-sm-and-down" style="text-transform: none !important;">
+                                        Welcome, {{ $store.getters.getUser.username  }}
                                         <v-icon class="ml-1 mb-1 py-auto" size="medium">mdi-arrow-down-drop-circle-outline</v-icon>
                                     </span>
                                     <v-icon class="hidden-md-and-up">mdi-dots-vertical</v-icon>
                                 </v-btn>
                             </template>
 
-                            <v-list>
+                            <v-list class="py-1">
                                 <v-list-item
                                     v-for="(item, index) in dropDownAppBarItems"
                                     :key="index"
-                                    @click=""
+                                    @click="logoutWhenRequested(item)"
                                     :to="item.route"
                                 >
                                     <v-icon color="primary">{{ item.icon }}</v-icon>
@@ -124,7 +124,7 @@
             dark
         >
             <v-list>
-                <template v-for="item in items">
+                <template v-for="item in menuItems">
                     <v-row
                         v-if="item.heading && shouldDisplayForUserGroup(item.displayForUserGroup) && shouldDisplayForScreenSize(item.displayForScreenSize)"
                         :key="item.heading"
@@ -170,6 +170,7 @@
                         :key="item.text"
                         link
                         :to="item.route"
+                        @click="logoutWhenRequested(item)"
                     >
                         <v-list-item-action>
                             <v-icon>{{ item.icon }}</v-icon>
@@ -186,13 +187,15 @@
         <v-content>
             <router-view @serverError="onServerError"></router-view>
         </v-content>
-        <v-footer app style="position: absolute" inset color="black" dark class="flex-column">
+        <v-footer app style="position: absolute" inset color="#F5F5F5" class="flex-column">
             <v-row>
-                Copyright © 2020 - Now | Catalin-Gabriel Anastasiu (e-mail: catalinanastas@gmail.com)
+                <strong>Copyright © 2020 - Now | Catalin-Gabriel Anastasiu (e-mail: catalinanastas@gmail.com).
+                    More details <router-link to="/copyrights">here</router-link>.
+                </strong>
             </v-row>
-            <v-row>
-                This is a Bachelor thesis, made for non-commercial use! All that can be seen on this website is of fictional kind.
-            </v-row>
+<!--            <v-row>-->
+<!--                <strong>This is a Bachelor thesis, made for non-commercial use! All that can be seen on this website is of fictional kind.</strong>-->
+<!--            </v-row>-->
         </v-footer>
     </v-app>
 </template>
@@ -209,24 +212,22 @@
             serverErrorMessage: '',
             drawer: null,
             valueOfDrobdownAppBar: false,
-            userRole: CONSTANTS.USER_ROLES.GUEST,
             dropDownAppBarItems: [
-                { title: 'My Account', icon: 'mdi-account-circle', route: '/user/id' },
-                { title: 'Log Out', icon: 'mdi-power', route: '/' }
-
+                { title: 'My Account', icon: 'mdi-account-circle', route: '/my-account' },
+                { title: 'Log Out', icon: 'mdi-power', route: '', isLogout: true }
             ],
-            items: [
+            menuItems: [
                 { heading: 'Account', displayForScreenSize: 'smAndDown' },
                 { icon: 'mdi-account-plus', text: 'Register', route: '/register', displayForUserGroup: CONSTANTS.USER_GROUPS.GUEST_ONLY, displayForScreenSize: 'smAndDown' },
                 { icon: 'mdi-login', text: 'Login', route: '/login', displayForUserGroup: CONSTANTS.USER_GROUPS.GUEST_ONLY, displayForScreenSize: 'smAndDown' },
-                { icon: 'mdi-account', text: 'My Account', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'smAndDown' },
-                { icon: 'mdi-power', text: 'Logout', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'smAndDown' },
+                { icon: 'mdi-account', text: 'My Account', route: '/my-account', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'smAndDown' },
+                { icon: 'mdi-power', text: 'Logout', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'smAndDown', isLogout: true },
                 { heading: 'General' },
                 { icon: 'mdi-home', text: 'Home', route: '/' },
-                { icon: 'mdi-account', text: 'My Account', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED },
-                { icon: 'mdi-chart-areaspline', text: 'Dashboard', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY },
+                { icon: 'mdi-account', text: 'My Account', route: '/my-account', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED },
+                { icon: 'mdi-chart-areaspline', text: 'Dashboard', route: '/dashboard', displayForUserGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY },
 
-                { icon: 'mdi-ticket', text: 'My Tickets', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED },
+                { icon: 'mdi-ticket', text: 'My Tickets', route: '/my-tickets', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED },
                 {
                     icon: 'mdi-chevron-up',
                     'icon-alt': 'mdi-chevron-down',
@@ -234,9 +235,9 @@
                     model: false,
                     displayForUserGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY,
                     children: [
-                        { icon: 'mdi-road-variant', text: 'Routes', route: '' },
-                        { icon: 'mdi-draw', text: 'Car Canvas', route: '' },
-                        { icon: 'mdi-settings', text: 'Miscellaneous', route: '' },
+                        { icon: 'mdi-road-variant', text: 'Routes', route: '/railway-management/routes' },
+                        { icon: 'mdi-draw', text: 'Car Canvas', route: '/railway-management/car-canvas' },
+                        { icon: 'mdi-settings', text: 'Miscellaneous', route: '/railway-management/miscellaneous' },
                     ],
                 },
                 {
@@ -245,8 +246,8 @@
                     text: 'Trains Schedule',
                     model: false,
                     children: [
-                        { icon: 'mdi-train', text: 'My Train', route: '' },
-                        { icon: 'mdi-clock-outline', text: 'Departures / Arrivals Station', route: '' },
+                        { icon: 'mdi-train', text: 'My Train', route: '/trains-schedule/my-train' },
+                        { icon: 'mdi-clock-outline', text: 'Departures / Arrivals Station', route: '/trains-schedule/departures-arrivals-station' },
                     ],
                 },
                 { icon: 'mdi-image-multiple', text: 'Gallery', route: '/gallery' },
@@ -254,6 +255,13 @@
             ],
         }),
         computed: {
+            userRole: function() {
+                if (this.$store.getters.isLoggedIn) {
+                    return this.$store.getters.getUser.role;
+                }
+                return CONSTANTS.USER_ROLES.GUEST;
+            },
+
             userIsGuest: function() {
                 return this.userRole === CONSTANTS.USER_ROLES.GUEST;
             }
@@ -302,8 +310,20 @@
             onServerError(errorMessage) {
                 this.serverErrorDialog = true;
                 this.serverErrorMessage = errorMessage;
-            }
+            },
 
+            logoutWhenRequested(dropdownMenuItem) {
+                if (dropdownMenuItem.isLogout) {
+                    this.$store.dispatch('logout');
+                    this.$router.push('/');
+                }
+            }
         }
     }
 </script>
+
+<style>
+    #ottr-app {
+        background-color: #F5F5F5;
+    }
+</style>

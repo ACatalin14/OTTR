@@ -1,18 +1,20 @@
 <template>
     <v-container fluid class="fill-height">
-        <v-row justify="center" align="center" class="fill-height">
+        <v-row justify="center" align="center" class="fill-height mx-0">
             <v-col cols="12" md="6">
-                <v-card>
+                <v-card style="border-top: solid 4px indigo">
                     <v-card-title class="justify-center">
                         <p class="display-1">
-                            Register new account
+                            Create a new account
                         </p>
                     </v-card-title>
                     <v-card-text>
                         <v-form
                             ref="registerForm"
                             v-model="valid"
+                            class="px-6"
                             lazy-validation
+                            @submit.prevent="register"
                         >
                             <v-text-field
                                 v-model="username"
@@ -53,12 +55,11 @@
                             ></v-text-field>
 
                             <v-row justify="center">
-                                <v-btn :disabled="!valid" color="primary" class="mt-2" @click="register">
-                                    Submit
+                                <v-btn :disabled="!valid" color="primary" class="mt-4 px-7 text-capitalize" type="submit">
+                                    Register Now
                                 </v-btn>
                             </v-row>
                         </v-form>
-                        <p v-if="msg">{{ msg }}</p>
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -68,6 +69,7 @@
 
 <script>
     import AuthService from '../services/authService';
+    import CONSTANTS from "../constants";
 
     export default {
         data() {
@@ -77,7 +79,6 @@
                 email: '',
                 password: '',
                 passwordRepeat: '',
-                msg: '',
                 showPassword: false,
                 showPasswordRepeat: false,
                 usernameRules: [
@@ -110,14 +111,17 @@
                         username: this.username,
                         email: this.email,
                         password: this.password,
-                        passwordRepeat: this.passwordRepeat
+                        passwordRepeat: this.passwordRepeat,
+                        role: CONSTANTS.USER_ROLES.USER
                     };
                     const response = await AuthService.register(credentials);
-                    console.log(response);
-                    this.msg = response.msg;
+
+                    await this.$store.dispatch('login', { token: response.token, user: response.user });
+
+                    await this.$router.push('/');
+
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message)
-                    // this.msg = error.response.data.msg;
                 }
             },
             validateForm() {

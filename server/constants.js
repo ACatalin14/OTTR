@@ -10,7 +10,7 @@ const CONSTANTS = {
         },
         EMAIL_ALREADY_EXISTS: {
             code: 1001,
-            message: 'Email already exists'
+            message: 'Email is already taken'
         },
         USERNAME_LENGTH: {
             code: 1002,

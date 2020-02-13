@@ -13,9 +13,9 @@ module.exports = {
             }
 
             const token = await user.generateAuthToken();
-
-            user.where({ email: req.body.email }).update(
-                { $set: { lastLogin: Date.now() } }
+            await User.updateOne(
+                { email: req.body.email },
+                { lastLogin: Date.now() }
                 );
 
             res.status(201).json({ user, token });
@@ -35,13 +35,14 @@ module.exports = {
                 email: req.body.email,
                 password: req.body.password,
                 registered: Date.now(),
-                lastLogin: Date.now()
+                lastLogin: Date.now(),
+                role: req.body.role
             });
 
-            let data = await user.save();
+            const savedUsed = await user.save();
             const token = await user.generateAuthToken();
 
-            res.status(201).json({ data, token });
+            res.status(201).json({ user: savedUsed, token });
         } catch (err) {
             res.status(400).json({ err: err });
         }
