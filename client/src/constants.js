@@ -14,12 +14,13 @@ const CONSTANTS = {
         ADMIN_ONLY: [
             USER_ROLES.ADMIN
         ],
-        GUEST_ONLY: [
+        UNAUTHENTICATED: [
             USER_ROLES.GUEST
         ]
     },
     ERRORS: {
-        1000: 'Login failed. Please check your credentials.',
+        LOGIN_FAILED: 'Login failed. Please check your credentials.',
+        UNREACHABLE_SERVER: 'Couldn\'t contact the server.'
     }
 };
 

@@ -1,5 +1,7 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import CONSTANTS from "../constants";
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+import Store from '../store';
 import Home from '../views/Home.vue'
 import Login from "../views/Login";
 import Register from "../views/Register";
@@ -26,22 +28,34 @@ const routes = [
     {
         path: '/my-account',
         name: 'my-account',
-        component: MyAccount
+        component: MyAccount,
+        meta: {
+            requiredAuthGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED
+        }
     },
     {
         path: '/dashboard',
         name: 'dashboard',
-        component: TheDashboard
+        component: TheDashboard,
+        meta: {
+            requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
+        }
     },
     {
         path: '/railway-management/routes',
         name: 'routes',
-        component: TheRoutes
+        component: TheRoutes,
+        meta: {
+            requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
+        }
     },
     {
         path: '/railway-management/miscellaneous',
         name: 'miscellaneous',
-        component: TheMiscellaneous
+        component: TheMiscellaneous,
+        meta: {
+            requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
+        }
     },
     {
         path: '/',
@@ -64,6 +78,25 @@ const router = new VueRouter({
     mode: 'history',
     base: process.env.BASE_URL,
     routes
+});
+
+router.beforeEach((to, from, next) => {
+
+    const userRole = Store.getters.getUser.role;
+
+    // check if there aren't matched routes needing special user rights
+    if (to.matched.every(record => !record.meta.requiredAuthGroup)) {
+        next();
+        return;
+    }
+
+    // if route is securized, check if user has rights to access it
+    if (!Store.getters.isLoggedIn || !to.matched[0].meta.requiredAuthGroup.includes(userRole)) {
+        next({ path: '/login' });
+        return;
+    }
+
+    next();
 });
 
 export default router

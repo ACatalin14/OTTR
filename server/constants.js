@@ -6,7 +6,7 @@ const CONSTANTS = {
         },
         WRONG_CREDENTIALS: {
             code: 1000,
-            message: 'Wrong authentication credentials'
+            message: 'Wrong email or password'
         },
         EMAIL_ALREADY_EXISTS: {
             code: 1001,

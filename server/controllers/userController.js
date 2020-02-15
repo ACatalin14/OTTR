@@ -33,10 +33,11 @@ module.exports = {
             const user = new User({
                 username: req.body.username,
                 email: req.body.email,
+                phone: req.body.phone,
                 password: req.body.password,
+                role: req.body.role,
                 registered: Date.now(),
-                lastLogin: Date.now(),
-                role: req.body.role
+                lastLogin: Date.now()
             });
 
             const savedUsed = await user.save();

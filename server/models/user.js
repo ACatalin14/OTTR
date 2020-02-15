@@ -12,13 +12,17 @@ const userSchema = mongoose.Schema({
         type: String,
         required: [true, "Please Include your email"]
     },
+    phone: {
+        type: String,
+        required: [true, "Please Include your phone number"]
+    },
     password: {
         type: String,
         required: [true, "Please Include your password"]
     },
     role: {
         type: Number,
-        required: [true, "Please Include your password"]
+        required: [true, "Please Include your role"]
     },
     tokens: [
         {

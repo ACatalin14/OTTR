@@ -12,10 +12,5 @@ module.exports = (req, res, next) => {
         return res.status(400).send({ err: CONSTANTS.ERRORS.PASSWORD_LENGTH });
     }
 
-    // password (repeat) does not match
-    if (!req.body.passwordRepeat || req.body.password !== req.body.passwordRepeat) {
-        return res.status(400).send({ err: CONSTANTS.ERRORS.PASSWORD_MISMATCH });
-    }
-
     next();
 };

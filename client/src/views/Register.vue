@@ -33,6 +33,14 @@
                             ></v-text-field>
 
                             <v-text-field
+                                v-model="phone"
+                                :rules="phoneRules"
+                                label="Phone Number"
+                                color="primary"
+                                placeholder="Enter your contact no"
+                            ></v-text-field>
+
+                            <v-text-field
                                 v-model="password"
                                 :rules="passwordRules"
                                 label="Password"
@@ -41,17 +49,6 @@
                                 :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                                 :type="showPassword ? 'text' : 'password'"
                                 @click:append="showPassword = !showPassword"
-                            ></v-text-field>
-
-                            <v-text-field
-                                v-model="passwordRepeat"
-                                :rules="passwordRepeatRules"
-                                label="Repeat Password"
-                                color="primary"
-                                placeholder="Enter same password"
-                                :append-icon="showPasswordRepeat ? 'mdi-eye' : 'mdi-eye-off'"
-                                :type="showPasswordRepeat ? 'text' : 'password'"
-                                @click:append="showPasswordRepeat = !showPasswordRepeat"
                             ></v-text-field>
 
                             <v-row justify="center">
@@ -77,8 +74,8 @@
                 valid: true,
                 username: '',
                 email: '',
+                phone: '',
                 password: '',
-                passwordRepeat: '',
                 showPassword: false,
                 showPasswordRepeat: false,
                 usernameRules: [
@@ -87,16 +84,15 @@
                 ],
                 emailRules: [
                     email => !!email || 'E-mail is required',
-                    email =>  /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email) || 'E-mail is invalid'
+                    email =>  /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/g.test(email) || 'E-mail is invalid'
+                ],
+                phoneRules: [
+                    phone => !!phone || 'Phone number is required',
+                    phone =>  /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/g.test(phone) || 'Phone number is invalid'
                 ],
                 passwordRules: [
                     password => !!password || 'Password is required',
                     password => password.length >= 6 || 'Password must have at least 6 characters'
-                ],
-                passwordRepeatRules: [
-                    passwordRep => !!passwordRep || 'Password confirmation is required',
-                    passwordRep => passwordRep === this.password || 'Passwords must match',
-                    passwordRep => passwordRep.length >= 6 || 'Password must have at least 6 characters',
                 ]
             };
         },
@@ -110,8 +106,8 @@
                     const credentials = {
                         username: this.username,
                         email: this.email,
+                        phone: this.phone,
                         password: this.password,
-                        passwordRepeat: this.passwordRepeat,
                         role: CONSTANTS.USER_ROLES.USER
                     };
                     const response = await AuthService.register(credentials);
@@ -127,34 +123,6 @@
             validateForm() {
                 return this.$refs.registerForm.validate();
             }
-        },
-        computed: {
-            // usernameRules() {
-            //     const rules = [];
-            //
-            //     rules.push(name => !!name || 'Username is required');
-            //     rules.push(name => (name || '').indexOf(' ') < 0 || 'No spaces are allowed');
-            //
-            //     return rules;
-            // },
-            // emailRules() {
-            //     const rules = [];
-            //
-            //     rules.push(email => !!email || 'Email is required');
-            //     rules.push(email =>  /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email) || 'Email is invalid');
-            //
-            //     return rules;
-            // },
-            // passwordRules() {
-            //     const rules = [];
-            //
-            //     return rules;
-            // },
-            // passwordRepeatRules() {
-            //     const rules = [];
-            //
-            //     return rules;
-            // }
         }
     };
 </script>

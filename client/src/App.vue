@@ -2,6 +2,7 @@
     <v-app id="ottr-app">
         <v-dialog
             v-model="serverErrorDialog"
+            @keydown="serverErrorDialog = false"
             width="300"
         >
             <v-card>
@@ -63,7 +64,7 @@
                             color="primary"
                             class="ml-4 pl-3 text-capitalize title hidden-sm-and-down"
                             v-if="userIsGuest"
-                            to="register"
+                            to="/register"
                         >
                             <v-icon size="large">mdi-account-plus</v-icon>
                             <span class="ml-2 text-capitalize title"> Register </span>
@@ -72,7 +73,7 @@
                             color="primary"
                             v-show="userIsGuest"
                             class="mx-4 pl-3 text-capitalize title hidden-sm-and-down"
-                            to="login"
+                            to="/login"
                         >
                             <v-icon size="large">mdi-login</v-icon>
                             <span class="ml-2 text-capitalize title"> Login </span>
@@ -184,18 +185,15 @@
                 </template>
             </v-list>
         </v-navigation-drawer>
-        <v-content>
+        <v-content app>
             <router-view @serverError="onServerError"></router-view>
         </v-content>
-        <v-footer app style="position: absolute" inset color="#F5F5F5" class="flex-column">
+        <v-footer app style="position: absolute" inset color="#E9E9E9" class="flex-column">
             <v-row>
                 <strong>Copyright © 2020 - Now | Catalin-Gabriel Anastasiu (e-mail: catalinanastas@gmail.com).
                     More details <router-link to="/copyrights">here</router-link>.
                 </strong>
             </v-row>
-<!--            <v-row>-->
-<!--                <strong>This is a Bachelor thesis, made for non-commercial use! All that can be seen on this website is of fictional kind.</strong>-->
-<!--            </v-row>-->
         </v-footer>
     </v-app>
 </template>
@@ -218,15 +216,14 @@
             ],
             menuItems: [
                 { heading: 'Account', displayForScreenSize: 'smAndDown' },
-                { icon: 'mdi-account-plus', text: 'Register', route: '/register', displayForUserGroup: CONSTANTS.USER_GROUPS.GUEST_ONLY, displayForScreenSize: 'smAndDown' },
-                { icon: 'mdi-login', text: 'Login', route: '/login', displayForUserGroup: CONSTANTS.USER_GROUPS.GUEST_ONLY, displayForScreenSize: 'smAndDown' },
+                { icon: 'mdi-account-plus', text: 'Register', route: '/register', displayForUserGroup: CONSTANTS.USER_GROUPS.UNAUTHENTICATED, displayForScreenSize: 'smAndDown' },
+                { icon: 'mdi-login', text: 'Login', route: '/login', displayForUserGroup: CONSTANTS.USER_GROUPS.UNAUTHENTICATED, displayForScreenSize: 'smAndDown' },
                 { icon: 'mdi-account', text: 'My Account', route: '/my-account', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'smAndDown' },
                 { icon: 'mdi-power', text: 'Logout', route: '', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'smAndDown', isLogout: true },
                 { heading: 'General' },
                 { icon: 'mdi-home', text: 'Home', route: '/' },
-                { icon: 'mdi-account', text: 'My Account', route: '/my-account', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED },
+                { icon: 'mdi-account', text: 'My Account', route: '/my-account', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'mdAndUp' },
                 { icon: 'mdi-chart-areaspline', text: 'Dashboard', route: '/dashboard', displayForUserGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY },
-
                 { icon: 'mdi-ticket', text: 'My Tickets', route: '/my-tickets', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED },
                 {
                     icon: 'mdi-chevron-up',
@@ -289,6 +286,11 @@
                 const currentDisplay = this.$vuetify.breakpoint.name;
 
                 switch (displayScreenSize) {
+                    case 'mdAndUp':
+                        if (['md', 'lg', 'xl'].includes(currentDisplay)) {
+                            return true;
+                        }
+                        break;
                     case 'mdAndDown':
                         if (['xs', 'sm', 'md'].includes(currentDisplay)) {
                             return true;
@@ -324,6 +326,6 @@
 
 <style>
     #ottr-app {
-        background-color: #F5F5F5;
+        background-color: #E9E9E9;
     }
 </style>

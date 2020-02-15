@@ -79,7 +79,6 @@
                         password: this.password
                     };
                     const response = await AuthService.login(credentials);
-                    console.log(response);
 
                     const token = response.token;
                     const user = response.user;
@@ -88,7 +87,7 @@
 
                     await this.$router.push('/');
                 } catch (error) {
-                    this.$emit('serverError', error.response.data.err.message)
+                    this.$emit('serverError', error.response.data.err.message);
                 }
             },
             validateForm() {
