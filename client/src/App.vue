@@ -190,7 +190,8 @@
         </v-content>
         <v-footer app style="position: absolute" inset color="#E9E9E9" class="flex-column">
             <v-row>
-                <strong>Copyright © 2020 - Now | Catalin-Gabriel Anastasiu (e-mail: catalinanastas@gmail.com).
+                <strong>Copyright © 2020 - Now | Catalin-Gabriel Anastasiu
+                    (<a href="mailto:catalinanastas@gmail.com">catalinanastas@gmail.com</a>).
                     More details <router-link to="/copyrights">here</router-link>.
                 </strong>
             </v-row>
@@ -327,5 +328,8 @@
 <style>
     #ottr-app {
         background-color: #E9E9E9;
+    }
+    a {
+        text-decoration: none
     }
 </style>

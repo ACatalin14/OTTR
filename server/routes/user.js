@@ -6,10 +6,9 @@ const validateRegister = require("../middlewares/userRegisterValidation");
 
 router.post('/register', validateRegister, userController.register);
 router.post('/login', userController.login);
+router.put('/:id', authorize, userController.update);
+router.delete('/:id', authorize, userController.delete);
 
 router.get('/my-account', authorize, userController.getUserDetails);
-router.get('/secret-route', authorize, (req, res, next) => {
-    res.send('This is the secret content. Lucky you, only logged in users can see that!');
-});
 
 module.exports = router;

@@ -14,8 +14,8 @@ const opts = {
         themes: {
             light: {
                 primary: '#1515CA',
-                secondary: '#FFF',  //F9FAFB
-                accent: '#0E0E81',
+                secondary: '#FFF',  // F9FAFB
+                accent: '#F28110', // #0E0E81 - darker indigo
                 error: '#DC0028',
                 info: '#2196F3',
                 success: '#4CAF50',

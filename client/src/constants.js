@@ -21,7 +21,8 @@ const CONSTANTS = {
     ERRORS: {
         LOGIN_FAILED: 'Login failed. Please check your credentials.',
         UNREACHABLE_SERVER: 'Couldn\'t contact the server.'
-    }
+    },
+    SERVER_URL: 'http://localhost:3000/api'
 };
 
 export default CONSTANTS;

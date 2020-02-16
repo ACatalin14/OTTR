@@ -1,8 +1,13 @@
 const CONSTANTS = {
+    USER_ROLES: {
+        ADMIN: 1,
+        USER: 2,
+        GUEST: 3
+    },
     ERRORS: {
         OTHER: {
             code: 0,
-            message: 'Unknown error'
+            message: 'Something went wrong'
         },
         WRONG_CREDENTIALS: {
             code: 1000,
@@ -23,7 +28,15 @@ const CONSTANTS = {
         PASSWORD_MISMATCH: {
             code: 1004,
             message: 'Both passwords must be the same'
-        }
+        },
+        UNAUTHORIZED_USER_EDIT: {
+            code: 1005,
+            message: 'You are not allowed to edit this user\'s details'
+        },
+        UNAUTHORIZED_USER_DELETE: {
+            code: 1006,
+            message: 'You are not allowed to delete this user'
+        },
     }
 };
 

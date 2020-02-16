@@ -1,12 +1,10 @@
 import axios from 'axios';
 import CONSTANTS from "../constants";
 
-const url = 'http://localhost:3000/api';
-
 export default {
     login(credentials) {
         return axios
-            .post(url + '/user/login', credentials)
+            .post(CONSTANTS.SERVER_URL + '/user/login', credentials)
             .then(response => response.data)
             .catch(err => {
                 if (err.response) {
@@ -19,7 +17,7 @@ export default {
     },
     register(credentials) {
         return axios
-            .post(url + '/user/register', credentials)
+            .post(CONSTANTS.SERVER_URL + '/user/register', credentials)
             .then(response => response.data)
             .catch(err => {
                 if (err.response) {
@@ -32,7 +30,7 @@ export default {
     },
     getUserDetails() {
         return axios
-            .get(url + '/user/my-account')
+            .get(CONSTANTS.SERVER_URL + '/user/my-account')
             .then(response => response.data);
     }
 };

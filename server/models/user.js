@@ -60,7 +60,9 @@ userSchema.methods.generateAuthToken = async function() {
     const token = jwt.sign({
             _id: user._id,
             username: user.username,
-            email: user.email
+            email: user.email,
+            phone: user.phone,
+            role: user.role
         }, config.jwtsecret);
 
     user.tokens = user.tokens.concat({ token });
