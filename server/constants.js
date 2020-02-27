@@ -37,6 +37,18 @@ const CONSTANTS = {
             code: 1006,
             message: 'You are not allowed to delete this user'
         },
+        DB_OBJECT_CREATE_FAILED: {
+            code: 1007,
+            message: 'Couldn\'t create new object in the database'
+        },
+        DB_OBJECT_UPDATE_FAILED: {
+            code: 1008,
+            message: 'Couldn\'t update object in the database'
+        },
+        DB_OBJECT_DELETE_FAILED: {
+            code: 1009,
+            message: 'Couldn\'t delete object in the database'
+        }
     }
 };
 

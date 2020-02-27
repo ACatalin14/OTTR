@@ -84,7 +84,7 @@ module.exports = {
                 return user;
             });
 
-            // Generate token for updated user
+            // Generate new token for updated user
             const token = await newUser.generateAuthToken();
 
             res.status(200).json({ user: newUser, token });
@@ -102,16 +102,15 @@ module.exports = {
                 return res.status(401).json({ err: CONSTANTS.ERRORS.UNAUTHORIZED_USER_DELETE });
             }
 
-            const deletedUser = await User.findByIdAndDelete(req.params.id,
-                (err, user) => {
+            await User.findByIdAndDelete(req.params.id,
+                (err, deletedUser) => {
                     if (err) {
                         throw err;
                     }
 
-                    return user;
+                    return res.status(200).json({ user: deletedUser });
                 });
 
-            res.status(200).json({ user: deletedUser });
         } catch (err) {
             res.status(500).json({ err: CONSTANTS.ERRORS.OTHER });
         }

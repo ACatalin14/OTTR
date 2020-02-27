@@ -11,7 +11,9 @@ module.exports = (req, res, next) => {
         next();
     } catch (err) {
         return res.status(401).json({
-            err: "You are unauthorized to access this resource"
+            err: {
+                message: "You are unauthorized to access this resource"
+            }
         });
     }
 };
