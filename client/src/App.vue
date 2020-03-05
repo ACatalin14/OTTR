@@ -241,6 +241,17 @@
                 {
                     icon: 'mdi-chevron-up',
                     'icon-alt': 'mdi-chevron-down',
+                    text: 'Users Management',
+                    model: false,
+                    displayForUserGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY,
+                    children: [
+                        { icon: 'mdi-account-group', text: 'OTTR Users', route: '/users-management/ottr-users' },
+                        { icon: 'mdi-school', text: 'Students', route: '/users-management/students' },
+                    ],
+                },
+                {
+                    icon: 'mdi-chevron-up',
+                    'icon-alt': 'mdi-chevron-down',
                     text: 'Trains Schedule',
                     model: false,
                     children: [
@@ -248,7 +259,7 @@
                         { icon: 'mdi-clock-outline', text: 'Departures / Arrivals Station', route: '/trains-schedule/departures-arrivals-station' },
                     ],
                 },
-                { icon: 'mdi-image-multiple', text: 'Gallery', route: '/gallery' },
+                // { icon: 'mdi-image-multiple', text: 'Gallery', route: '/gallery' },
                 { icon: 'mdi-email', text: 'Contact', route: '/contact' },
             ],
         }),
