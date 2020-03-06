@@ -10,6 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 mongoose.set("useCreateIndex", true);
+mongoose.set("useFindAndModify", false);
 mongoose
     .connect(config.db.connection, { useNewUrlParser: true})
     .then(() => {

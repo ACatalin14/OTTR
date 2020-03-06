@@ -11,12 +11,16 @@
                     </v-col>
                     <v-divider vertical class="my-5"></v-divider>
                     <v-col cols="12" md="6" lg="6">
-                        <TrainCategoriesTable @serverError="onServerError"></TrainCategoriesTable>
+                        <TravelClassesTable @serverError="onServerError"></TravelClassesTable>
                     </v-col>
                 </v-row>
-                <v-row class="mt-6" justify="center">
-                    <v-col cols="12" md="6" lg="8">
+                <v-row justify="space-between" class="mt-6">
+                    <v-col cols="12" md="6" lg="6">
                         <StationsTable @serverError="onServerError"></StationsTable>
+                    </v-col>
+                    <v-divider vertical class="my-5"></v-divider>
+                    <v-col cols="12" md="6" lg="5">
+                        <TravelerCategoryTable @serverError="onServerError"></TravelerCategoryTable>
                     </v-col>
                 </v-row>
             </v-col>
@@ -27,9 +31,11 @@
 <script>
     import StationsTable from "../components/StationsTable";
     import TrainCategoriesTable from "../components/TrainCategoriesTable";
+    import TravelClassesTable from "../components/TravelClassesTable";
+    import TravelerCategoryTable from "../components/TravelerCategoriesTable";
     export default {
         name: "TheMiscellaneous",
-        components: {TrainCategoriesTable, StationsTable},
+        components: {TravelerCategoryTable, TravelClassesTable, TrainCategoriesTable, StationsTable},
         data() {
             return {
 
