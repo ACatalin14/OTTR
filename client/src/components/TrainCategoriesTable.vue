@@ -1,13 +1,12 @@
 <template>
     <CrudTable
-        entity="station"
-        entity-name-plural="stations"
+        entity="train category"
+        entity-name-plural="train categories"
         sort-default-by="name"
         :headers="headers"
         :service="service"
         :default-item="defaultItem"
         :validation-rules="validationRules"
-        with-search
         @serverError="onServerError"
     >
         <template #form="{ editedItem }">
@@ -16,14 +15,14 @@
                     <v-col cols="12" sm="4">
                         <v-text-field
                             v-model="editedItem.code"
-                            label="Station code"
+                            label="Category Code"
                             :rules="validationRules.code"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="8">
                         <v-text-field
                             v-model="editedItem.name"
-                            label="Station name"
+                            label="Category Name"
                             :rules="validationRules.name"
                         ></v-text-field>
                     </v-col>
@@ -38,11 +37,11 @@
     import CrudTable from "./CrudTable";
 
     export default {
-        name: "StationsTable",
+        name: "TrainCategoriesTable",
         components: {CrudTable},
         data() {
             return {
-                service: CrudService.getCrudServiceForResource('station'),
+                service: CrudService.getCrudServiceForResource('train-category'),
                 headers: [
                     { text: 'Code', value: 'code', align: 'center' },
                     { text: 'Name', value: 'name', align: 'center' }

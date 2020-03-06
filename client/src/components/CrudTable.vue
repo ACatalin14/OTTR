@@ -32,7 +32,7 @@
                             @submit.prevent="save"
                         >
                             <v-card-title>
-                                <span class="headline">{{ formTitle }}</span>
+                                <span class="headline text-capitalize">{{ formTitle }}</span>
                             </v-card-title>
                             <v-divider></v-divider>
                             <v-card-text class="py-0">
@@ -104,7 +104,7 @@
             itemFormValid: true,
             searchBar: '',
             tableHeaders: [
-                { text: 'Actions', value: 'action', align: 'right', sortable: false }
+                { text: 'Actions', value: 'action', align: 'center', sortable: false }
             ],
             items: [],
             editingItem: false,

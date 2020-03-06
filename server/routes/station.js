@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const authorize = require('../middlewares/authorization.js');
+const adminAuthorize = require('../middlewares/adminAuthorization.js');
 const stationController = require('../controllers/stationController');
 
-router.get('/', authorize, stationController.index);
-router.get('/:id', authorize, stationController.show);
-router.post('/', authorize, stationController.create);
-router.put('/:id', authorize, stationController.update);
-router.delete('/:id', authorize, stationController.delete);
+router.get('/', adminAuthorize, stationController.index);
+router.get('/:id', adminAuthorize, stationController.show);
+router.post('/', adminAuthorize, stationController.create);
+router.put('/:id', adminAuthorize, stationController.update);
+router.delete('/:id', adminAuthorize, stationController.delete);
 
 module.exports = router;
