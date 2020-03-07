@@ -11,6 +11,7 @@ import TheDashboard from "../views/TheDashboard";
 import TheCopyright from "../views/TheCopyright";
 import TheRoutes from "../views/TheRoutes";
 import TheMiscellaneous from "../views/TheMiscellaneous";
+import TheStudents from "../views/TheStudents";
 
 Vue.use(VueRouter);
 
@@ -58,6 +59,14 @@ const routes = [
         }
     },
     {
+        path: '/users-management/students',
+        name: 'students',
+        component: TheStudents,
+        meta: {
+            requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
+        }
+    },
+    {
         path: '/',
         name: 'home',
         component: Home,
@@ -90,7 +99,7 @@ router.beforeEach((to, from, next) => {
         return;
     }
 
-    // if route is securized, check if user has rights to access it
+    // if route is secured, check if user has rights to access it
     if (!Store.getters.isLoggedIn || !to.matched[0].meta.requiredAuthGroup.includes(userRole)) {
         next({ path: '/login' });
         return;

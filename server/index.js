@@ -14,7 +14,7 @@ mongoose.set("useFindAndModify", false);
 mongoose
     .connect(config.db.connection, { useNewUrlParser: true})
     .then(() => {
-        console.log('Conncted to the database.');
+        console.log('Connected to the database.');
     })
     .catch(err => {
         console.log({database_err: err});

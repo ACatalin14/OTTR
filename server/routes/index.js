@@ -6,5 +6,6 @@ router.use('/station', require('./station'));
 router.use('/train-category', require('./trainCategory'));
 router.use('/travel-class', require('./travelClass'));
 router.use('/traveler-category', require('./travelerCategory'));
+router.use('/student', require('./student'));
 
 module.exports = router;

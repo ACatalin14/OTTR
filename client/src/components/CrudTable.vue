@@ -176,6 +176,11 @@
                         await this.service.create(this.editedItem);
                     }
 
+                } catch (error) {
+                    this.$emit('serverError', error.response.data.err.message);
+                }
+
+                try {
                     this.items = await this.service.index();
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);

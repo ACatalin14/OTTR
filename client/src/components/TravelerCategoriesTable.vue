@@ -22,6 +22,7 @@
                     <v-col cols="12" sm="5">
                         <v-text-field
                             v-model="editedItem.discount"
+                            type="number"
                             label="Ticket Discount (%)"
                             :rules="validationRules.discount"
                         ></v-text-field>
@@ -47,7 +48,6 @@
                     { text: 'Ticket Discount (%)', value: 'discount', align: 'center' }
                 ],
                 defaultItem: {
-                    id: '',
                     name: '',
                     discount: ''
                 },

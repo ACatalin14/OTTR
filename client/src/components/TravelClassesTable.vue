@@ -47,7 +47,6 @@
                     { text: 'Name', value: 'name', align: 'center' }
                 ],
                 defaultItem: {
-                    id: '',
                     code: '',
                     name: ''
                 },
