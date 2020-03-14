@@ -4,6 +4,7 @@
         :items="items"
         :sort-by="sortDefaultBy"
         :search="searchBar"
+        :no-results-text="'No ' + entityNamePlural + ' have been found'"
         class="elevation-3"
     >
         <template v-slot:top>
@@ -112,7 +113,7 @@
         }),
 
         computed: {
-            formTitle () {
+            formTitle() {
                 const capitalizedName = this.entity[0].toUpperCase() + this.entity.slice(1);
                 return !this.editingItem ? 'New ' + capitalizedName : 'Edit ' + capitalizedName;
             },
@@ -124,14 +125,14 @@
             },
         },
 
-        created () {
+        created() {
             this.initialize();
             this.tableHeaders = this.headers.concat(this.tableHeaders);
             this.editedItem = Object.assign({}, this.defaultItem);
         },
 
         methods: {
-            async initialize () {
+            async initialize() {
                 try {
                     this.items = await this.service.index();
                 } catch (error) {
@@ -139,13 +140,13 @@
                 }
             },
 
-            editItem (item) {
+            editItem(item) {
                 this.editedItem = Object.assign({}, item);
                 this.editingItem = true;
                 this.formDialog = true
             },
 
-            async deleteItem (item) {
+            async deleteItem(item) {
 
                 try {
                     await this.service.delete(item._id);
@@ -155,7 +156,7 @@
                 }
             },
 
-            close () {
+            close() {
                 this.formDialog = false;
                 setTimeout(() => {
                     this.editedItem = Object.assign({}, this.defaultItem);
@@ -163,7 +164,7 @@
                 }, 300);
             },
 
-            async save () {
+            async save() {
                 try {
                     if (!this.$refs.itemForm.validate()) {
                         this.itemFormValid = false;

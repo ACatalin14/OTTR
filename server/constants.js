@@ -48,7 +48,15 @@ const CONSTANTS = {
         DB_OBJECT_DELETE_FAILED: {
             code: 1009,
             message: 'Couldn\'t delete object in the database'
-        }
+        },
+        LAYOUT_ELEMENTS_NOT_ARRAY: {
+            code: 1010,
+            message: 'Car Layout Elements is of unknown type'
+        },
+        LAYOUT_ELEMENT_UNKNOWN_TYPE: {
+            code: 1011,
+            message: 'Car Layout Element is of unknown type'
+        },
     }
 };
 

@@ -234,8 +234,8 @@
                     displayForUserGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY,
                     children: [
                         { icon: 'mdi-road-variant', text: 'Routes', route: '/railway-management/routes' },
-                        { icon: 'mdi-draw', text: 'Car Canvas', route: '/railway-management/car-canvas' },
-                        { icon: 'mdi-settings', text: 'Miscellaneous', route: '/railway-management/miscellaneous' },
+                        { icon: 'mdi-draw', text: 'Car Layouts', route: '/railway-management/car-layouts' },
+                        { icon: 'mdi-cog', text: 'Miscellaneous', route: '/railway-management/miscellaneous' },
                     ],
                 },
                 {
