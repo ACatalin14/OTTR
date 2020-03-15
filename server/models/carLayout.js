@@ -50,6 +50,6 @@ const carLayoutSchema = mongoose.Schema({
     ]
 });
 
-const CarLayout = mongoose.model("CarLayout", carLayoutSchema, 'carLayout');
+const CarLayout = mongoose.model("CarLayout", carLayoutSchema, 'carLayouts');
 
 module.exports = CarLayout;
