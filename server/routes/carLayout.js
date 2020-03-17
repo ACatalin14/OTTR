@@ -5,6 +5,7 @@ const carLayoutController = require('../controllers/carLayoutController');
 
 router.get('/', adminAuthorize, carLayoutController.index);
 router.get('/:id', adminAuthorize, carLayoutController.show);
+router.get('/name/:name', adminAuthorize, carLayoutController.getByName);
 router.post('/', adminAuthorize, carLayoutController.create);
 router.put('/:id', adminAuthorize, carLayoutController.update);
 router.delete('/:id', adminAuthorize, carLayoutController.delete);

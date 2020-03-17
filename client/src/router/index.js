@@ -14,7 +14,6 @@ import TheMiscellaneous from "../views/TheMiscellaneous";
 import TheStudents from "../views/TheStudents";
 import CarLayouts from "../views/CarLayouts";
 import CarLayoutsCreate from "../views/CarLayoutsCreate";
-import CarLayoutsEdit from "../views/CarLayoutsEdit";
 import CarLayoutsShow from "../views/CarLayoutsShow";
 
 Vue.use(VueRouter);
@@ -81,7 +80,7 @@ const routes = [
     {
         path: '/railway-management/car-layouts/edit/:carLayoutName',
         name: 'carLayoutsEdit',
-        component: CarLayoutsEdit,
+        component: CarLayoutsCreate,
         meta: {
             requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
         }

@@ -18,33 +18,45 @@ const carLayoutSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    cellSize: {
+        type: Number,
+        required: true
+    },
+    lastElementId: {
+        type: Number,
+        required: true
+    },
     elements: [
         new mongoose.Schema({
+            i: {
+                type: Number,
+                required: true
+            },
+            x: {
+                type: Number,
+                required: true
+            },
+            y: {
+                type: Number,
+                required: true
+            },
+            w: {
+                type: Number,
+                required: true,
+                default: 1
+            },
+            h: {
+                type: Number,
+                required: true,
+                default: 1
+            },
             type: {
                 type: Number,
                 required: true,
             },
-            resizable: {
-                type: Boolean,
-                required: true
-            },
-            row: {
+            seatNumber: {
                 type: Number,
-                required: true
-            },
-            column: {
-                type: Number,
-                required: true
-            },
-            width: {
-                type: Number,
-                required: true,
-                default: 1
-            },
-            height: {
-                type: Number,
-                required: true,
-                default: 1
+                required: false
             }
         })
     ]

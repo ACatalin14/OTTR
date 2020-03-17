@@ -86,6 +86,7 @@
                 { text: 'Seating Capacity', value: 'seatingCapacity', align: 'center' },
                 { text: 'Width (cells)', value: 'width', align: 'center' },
                 { text: 'Height (cells)', value: 'height', align: 'center' },
+                { text: 'Cell Size (pixels)', value: 'cellSize', align: 'center' },
                 { text: 'Actions', value: 'action', align: 'center', sortable: false }
             ],
             items: [],

@@ -4,6 +4,15 @@ const CONSTANTS = {
         USER: 2,
         GUEST: 3
     },
+    LAYOUT_ELEMENTS: {
+        SEAT_LEFT: 1,
+        SEAT_RIGHT: 2,
+        SEAT_UP: 3,
+        SEAT_DOWN: 4,
+        LUGGAGE_RACK: 5,
+        TABLE: 6,
+        WALL: 7
+    },
     ERRORS: {
         OTHER: {
             code: 0,
@@ -57,6 +66,14 @@ const CONSTANTS = {
             code: 1011,
             message: 'Car Layout Element is of unknown type'
         },
+        LAYOUT_ELEMENT_SEAT_NUMBER_MISSING: {
+            code: 1012,
+            message: 'Seat Layout Element is missing its number'
+        },
+        CAR_LAYOUT_NOT_FOUND: {
+            code: 1013,
+            message: 'The car layout you\'re looking for does not exist'
+        }
     }
 };
 

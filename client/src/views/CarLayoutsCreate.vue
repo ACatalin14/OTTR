@@ -1,8 +1,45 @@
 <template>
     <GrayContainer>
+        <v-dialog
+            v-model="saveLayoutDialog"
+            persistent
+            max-width="600"
+        >
+            <v-card>
+                <v-form
+                    v-model="saveLayoutFormValid"
+                    ref="saveLayoutForm"
+                    lazy-validation
+                    @submit.prevent="saveLayout"
+                >
+                    <v-card-title>
+                        <span class="headline">Save Car Layout</span>
+                    </v-card-title>
+                    <v-divider></v-divider>
+                    <v-card-text class="px-7">
+                        <v-container>
+                            <v-row no-gutters>
+                                <v-col cols="12">
+                                    <v-text-field
+                                        v-model="newLayoutName"
+                                        label="Layout Name"
+                                        :rules="layoutNameRules"
+                                    ></v-text-field>
+                                </v-col>
+                            </v-row>
+                        </v-container>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="error" text @click="changeSaveLayoutDialogVisibility()">Cancel</v-btn>
+                        <v-btn color="primary" text :disabled="!saveLayoutFormValid" type="submit">Save</v-btn>
+                    </v-card-actions>
+                </v-form>
+            </v-card>
+        </v-dialog>
         <v-row class="ma-0 pa-0">
 
-            <h1 class="headline font-weight-black mt-2 pa-0"> New Car Layout</h1>
+            <h1 class="headline font-weight-black mt-2 pa-0"> {{ title }} </h1>
             <v-spacer></v-spacer>
             <v-btn
                 v-if="$vuetify.breakpoint.smAndUp"
@@ -18,6 +55,7 @@
                 color="primary"
                 class="ma-0 mr-2"
                 outlined
+                @click="changeSaveLayoutDialogVisibility()"
             >
                 <strong>Save layout</strong>
             </v-btn>
@@ -33,6 +71,7 @@
                 v-if="$vuetify.breakpoint.xsOnly"
                 color="primary"
                 icon
+                @click="changeSaveLayoutDialogVisibility()"
             >
                 <v-icon>mdi-content-save</v-icon>
             </v-btn>
@@ -41,10 +80,10 @@
         <v-row>
             <v-col cols="12" md="3">
                 <v-card class="fill-height">
-                    <v-card-title> Car Properties </v-card-title>
+                    <v-card-title> Layout Properties </v-card-title>
                     <v-card-text class="px-0">
                         <v-text-field
-                            v-model.number="carLayoutWidth"
+                            v-model.number="carLayout.width"
                             label="Width (cells)"
                             :rules="carLayoutWidthRules"
                             type="number"
@@ -52,7 +91,7 @@
                             prepend-icon="mdi-arrow-left-right"
                         ></v-text-field>
                         <v-text-field
-                            v-model.number="carLayoutHeight"
+                            v-model.number="carLayout.height"
                             label="Height (cells)"
                             :rules="carLayoutHeightRules"
                             type="number"
@@ -60,7 +99,7 @@
                             prepend-icon="mdi-arrow-up-down"
                         ></v-text-field>
                         <v-text-field
-                            v-model.number="cellSize"
+                            v-model.number="carLayout.cellSize"
                             label="Cell Size (pixels)"
                             :rules="cellSizeRules"
                             type="number"
@@ -78,7 +117,7 @@
                         lazy-validation
                         @submit.prevent="addNewElement"
                     >
-                        <v-card-title class="">
+                        <v-card-title>
                             New Layout Element
                         </v-card-title>
                         <v-card-text class="pb-0 mb-0">
@@ -113,7 +152,16 @@
                                                     alt="Element Image"
                                                     width="30"
                                                     transition="scale-transition"
-                                                />
+                                                >
+                                                    <div
+                                                        v-if="checkElementTypeIsSeat(newElementType)"
+                                                        class="text elementContainer">
+                                                        <p
+                                                            class="ma-0 pa-0 centeredText">
+                                                            <strong>{{ newElementSeatNumber }}</strong>
+                                                        </p>
+                                                    </div>
+                                                </v-img>
                                             </v-col>
                                         </v-row>
                                     </v-sheet>
@@ -145,7 +193,16 @@
                                                     width="30"
                                                     class="ml-5 ml-sm-7"
                                                     transition="scale-transition"
-                                                />
+                                                >
+                                                    <div
+                                                        v-if="checkElementTypeIsSeat(newElementType)"
+                                                        class="text elementContainer">
+                                                        <p
+                                                            class="ma-0 pa-0 centeredText">
+                                                            <strong>{{ newElementSeatNumber }}</strong>
+                                                        </p>
+                                                    </div>
+                                                </v-img>
                                             </v-col>
                                         </v-row>
                                     </v-sheet>
@@ -157,7 +214,7 @@
                                             outlined
                                             @click="addNewElement()"
                                             :disabled="!elementFormValid || !getAvailablePosition() ||
-                                            seatNumberAlreadyTaken()"
+                                           seatNumberAlreadyTaken()"
                                         >
                                             <strong>Add Element</strong>
                                         </v-btn>
@@ -192,9 +249,9 @@
                     align="left"
                 >
                     <grid-layout
-                        :layout.sync="gridLayout"
-                        :col-num="carLayoutWidth"
-                        :row-height="cellSize"
+                        :layout.sync="carLayout.gridLayout"
+                        :col-num="carLayout.width"
+                        :row-height="carLayout.cellSize"
                         :is-draggable="true"
                         :is-resizable="true"
                         :is-mirrored="false"
@@ -203,9 +260,9 @@
                         :use-css-transforms="true"
                         :prevent-collision="true"
                         :isResizable="true"
-                        :maxRows="carLayoutHeight"
+                        :maxRows="carLayout.height"
                     >
-                        <grid-item v-for="item in gridLayout"
+                        <grid-item v-for="item in carLayout.gridLayout"
                                    :x="item.x"
                                    :y="item.y"
                                    :w="item.w"
@@ -217,7 +274,7 @@
                                 v-model="item.showDeleteIcon"
                                 top
                                 :offset-x="true"
-                                :nudge-top="item.h * cellSize - 10"
+                                :nudge-top="item.h * carLayout.cellSize + (item.h - 1) * gridMargin - 10"
                                 max-width="20"
                                 open-on-click
                             >
@@ -226,8 +283,8 @@
                                         :src="require('@/assets/' + getPngNameFromType(item.type))"
                                         alt="Element Image"
                                         transition="scale-transition"
-                                        :width=" item.w * cellSize + gridMargin * (item.w - 1) "
-                                        :height=" item.h * cellSize + gridMargin * (item.h - 1) "
+                                        :width=" item.w * carLayout.cellSize + gridMargin * (item.w - 1) "
+                                        :height=" item.h * carLayout.cellSize + gridMargin * (item.h - 1) "
                                         v-on="on"
                                     >
                                         <div
@@ -253,6 +310,9 @@
 <script>
     import GrayContainer from "../components/GrayContainer";
     import VueGridLayout from 'vue-grid-layout';
+    import CONSTANTS from "../constants";
+    import CrudService from "../services/crudService";
+    import CarLayoutService from "../services/carLayoutService";
 
     export default {
         name: "CarLayoutCreate",
@@ -263,20 +323,40 @@
         },
         data() {
             return {
-                carLayoutWidth: 50,
-                carLayoutHeight: 10,
-                cellSize: 10,
-                newElementType: 'Seat (left)',
+                service: CrudService.getCrudServiceForResource('car-layout'),
+                saveLayoutDialog: false,
+                saveLayoutFormValid: true,
+                editingCarLayout: false,
+                carLayout: {
+                    _id: null,
+                    name: '',
+                    seatingCapacity: 0,
+                    width: 50,
+                    height: 10,
+                    cellSize: 10,
+                    lastElementId: 0,
+                    gridLayout: []
+                },
+                newLayoutName: '',
+                newElementType: CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT,
                 newElementWidth: 3,
                 newElementHeight: 3,
                 newElementSeatNumber: 10,
                 newElementImagePath: 'seat-left.png',
-                gridMargin: 2,
+                gridMargin: 1,
                 elementFormValid: true,
-                showDeleteIcon: false,
-                lastElementId: 2,
                 layoutElementTypes: [
-                    'Seat (left)', 'Seat (right)', 'Seat (up)', 'Seat (down)', 'Luggage Rack', 'Table', 'Wall'
+                    { text: 'Seat (left)', value: CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT },
+                    { text: 'Seat (right)', value: CONSTANTS.LAYOUT_ELEMENTS.SEAT_RIGHT },
+                    { text: 'Seat (up)', value: CONSTANTS.LAYOUT_ELEMENTS.SEAT_UP },
+                    { text: 'Seat (down)', value: CONSTANTS.LAYOUT_ELEMENTS.SEAT_DOWN },
+                    { text: 'Luggage Rack', value: CONSTANTS.LAYOUT_ELEMENTS.LUGGAGE_RACK },
+                    { text: 'Table', value: CONSTANTS.LAYOUT_ELEMENTS.TABLE },
+                    { text: 'Wall', value: CONSTANTS.LAYOUT_ELEMENTS.WALL },
+                ],
+                layoutNameRules: [
+                    name => !!name || 'Layout name is required',
+                    name => name.length >= 3 || 'Layout name must have at least 3 characters'
                 ],
                 carLayoutWidthRules: [
                     width => /^\d+$/.test(width) || 'Width must be an integer number',
@@ -304,19 +384,41 @@
                     height => height <= 100 || 'Height must be 100 or under'
                 ],
                 newSeatNumberRules: [
-                    seatNumber => /^\d+$/.test(seatNumber) || 'Size must be an integer number',
-                    seatNumber => seatNumber >= 1 || 'Size must be 1 or above',
-                    seatNumber => seatNumber <= 300 || 'Size must be 300 or under'
-                ],
-                gridLayout: [
-                    {"x":0,"y":0,"w":2,"h":2,"i":0, type:'Seat (left)', seatNumber:123},
-                    {"x":4,"y":0,"w":3,"h":3,"i":1, type:'Seat (up)', seatNumber:173},
-                    {"x":9,"y":0,"w":5,"h":2,"i":2, type:'Table'},
+                    seatNumber => /^\d+$/.test(seatNumber) || 'Seat number must be an integer number',
+                    seatNumber => seatNumber >= 1 || 'Seat number must be 1 or above',
+                    seatNumber => seatNumber < 1000 || 'Seat number must be under 1000',
+                    seatNumber => !this.seatNumberAlreadyTaken(seatNumber) || 'Seat number already in use'
                 ]
             }
         },
-        created() {
+        async created() {
+            if (this.$route.name === 'carLayoutsCreate') {
+                return;
+            }
 
+            this.editingCarLayout = true;
+
+            try {
+                const dataBaseCarLayout = await CarLayoutService.getByName(this.$route.params.carLayoutName);
+
+                this.carLayout._id = dataBaseCarLayout._id;
+                this.carLayout.name = dataBaseCarLayout.name;
+                this.carLayout.seatingCapacity = dataBaseCarLayout.seatingCapacity;
+                this.carLayout.width = dataBaseCarLayout.width;
+                this.carLayout.height = dataBaseCarLayout.height;
+                this.carLayout.cellSize = dataBaseCarLayout.cellSize;
+                this.carLayout.lastElementId = dataBaseCarLayout.lastElementId;
+
+                this.carLayout.gridLayout = [];
+                for (let item of dataBaseCarLayout.elements) {
+                    this.carLayout.gridLayout.push(item);
+                }
+
+
+            } catch (error) {
+                this.$emit('serverError', error.response.data.err.message);
+                await this.$router.push({ name: 'carLayouts'});
+            }
         },
         watch: {
             newElementWidth(newWidth) {
@@ -326,6 +428,10 @@
             }
         },
         computed: {
+            title() {
+                return this.editingCarLayout ? 'Edit Car Layout' : 'New Car Layout';
+            },
+
             shouldDisableNewElementHeight() {
                 return this.checkElementTypeIsSquare(this.newElementType);
             },
@@ -335,32 +441,32 @@
             },
 
             sheetWidth() {
-                return this.cellSize * this.carLayoutWidth + this.gridMargin * (this.carLayoutWidth - 1)
+                return this.carLayout.cellSize * this.carLayout.width + this.gridMargin * (this.carLayout.width - 1)
                     + 2 * 4 * 5;   // plus padding
             },
 
             sheetHeight() {
-                return this.cellSize * this.carLayoutHeight + this.gridMargin * (this.carLayoutHeight - 1)
+                return this.carLayout.cellSize * this.carLayout.height + this.gridMargin * (this.carLayout.height - 1)
                     + 2 * 4 * 5;
             }
         },
         methods: {
             checkElementTypeIsSeat(elementType) {
                 return [
-                    'Seat (left)',
-                    'Seat (right)',
-                    'Seat (up)',
-                    'Seat (down)'
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT,
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_RIGHT,
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_UP,
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_DOWN
                 ].includes(elementType);
             },
 
             checkElementTypeIsSquare(elementType) {
                 return [
-                    'Seat (left)',
-                    'Seat (right)',
-                    'Seat (up)',
-                    'Seat (down)',
-                    'Luggage Rack'
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT,
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_RIGHT,
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_UP,
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_DOWN,
+                    CONSTANTS.LAYOUT_ELEMENTS.LUGGAGE_RACK
                 ].includes(elementType);
             },
 
@@ -377,19 +483,19 @@
             getPngNameFromType(elementType) {
 
                 switch (elementType) {
-                    case 'Seat (left)':
+                    case CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT:
                         return 'seat-left.png';
-                    case 'Seat (right)':
+                    case CONSTANTS.LAYOUT_ELEMENTS.SEAT_RIGHT:
                         return 'seat-right.png';
-                    case 'Seat (up)':
+                    case CONSTANTS.LAYOUT_ELEMENTS.SEAT_UP:
                         return 'seat-up.png';
-                    case 'Seat (down)':
+                    case CONSTANTS.LAYOUT_ELEMENTS.SEAT_DOWN:
                         return 'seat-down.png';
-                    case 'Luggage Rack':
+                    case CONSTANTS.LAYOUT_ELEMENTS.LUGGAGE_RACK:
                         return 'luggage-rack.png';
-                    case 'Table':
+                    case CONSTANTS.LAYOUT_ELEMENTS.TABLE:
                         return 'table.png';
-                    case 'Wall':
+                    case CONSTANTS.LAYOUT_ELEMENTS.WALL:
                         return 'wall.png';
                     default:
                         return 'no-existing-png-for-this-type';
@@ -397,10 +503,11 @@
             },
 
             addNewElement() {
+                // we suppose there is an available position to add the element
                 const availablePosition = this.getAvailablePosition();
-                this.lastElementId++;
+                this.carLayout.lastElementId++;
                 const newElement = {
-                    i: this.lastElementId,
+                    i: this.carLayout.lastElementId,
                     x: availablePosition.x,
                     y: availablePosition.y,
                     w: this.newElementWidth,
@@ -410,16 +517,16 @@
 
                 if (this.checkElementTypeIsSeat(newElement.type)) {
                     newElement.seatNumber = this.newElementSeatNumber;
+                    this.carLayout.seatingCapacity++;
                 }
 
-                console.log(newElement);
+                this.carLayout.gridLayout.push(newElement);
 
-                this.gridLayout.push(newElement);
             },
 
             getAvailablePosition() {
-                const rowLimit = this.carLayoutHeight - this.newElementHeight + 1;
-                const colLimit = this.carLayoutWidth - this.newElementWidth + 1;
+                const rowLimit = this.carLayout.height - this.newElementHeight + 1;
+                const colLimit = this.carLayout.width - this.newElementWidth + 1;
 
                 for (let cornerRow = 0; cornerRow < rowLimit; cornerRow++) {
                     for (let cornerCol = 0; cornerCol < colLimit; cornerCol++) {
@@ -429,7 +536,7 @@
                         for (let row = cornerRow; row < cornerRow + this.newElementHeight; row++) {
                             for (let col = cornerCol; col < cornerCol + this.newElementWidth; col++) {
 
-                                for (let element of this.gridLayout) {
+                                for (let element of this.carLayout.gridLayout) {
 
                                     if (row >= element.y && row <= element.y + element.h - 1 &&
                                         col >= element.x && col <= element.x + element.w - 1
@@ -462,12 +569,18 @@
             },
 
             deleteElement(id) {
-                const index = this.gridLayout.findIndex( element => element.i === id );
-                this.gridLayout.splice(index, 1);
+                const index = this.carLayout.gridLayout.findIndex( element => element.i === id );
+
+                if (this.checkElementTypeIsSeat(this.carLayout.gridLayout[index].type)) {
+                    this.carLayout.seatingCapacity--;
+                }
+
+                this.carLayout.gridLayout.splice(index, 1);
             },
 
             removeAllElements() {
-                this.gridLayout.splice(0, this.gridLayout.length);
+                this.carLayout.gridLayout.splice(0, this.carLayout.gridLayout.length);
+                this.carLayout.seatingCapacity = 0;
             },
 
             seatNumberAlreadyTaken() {
@@ -475,13 +588,79 @@
                     return false;
                 }
 
-                for (let element of this.gridLayout) {
+                for (let element of this.carLayout.gridLayout) {
                     if (element.seatNumber === this.newElementSeatNumber) {
                         return true;
                     }
                 }
 
                 return false;
+            },
+
+            async saveLayout() {
+
+                try {
+                    if (!this.$refs.saveLayoutForm.validate()) {
+                        this.saveLayoutFormValid = false;
+                        return;
+                    }
+
+                    const layoutToSave = {
+                        _id: this.carLayout._id,
+                        name: this.newLayoutName,
+                        seatingCapacity: this.carLayout.seatingCapacity,
+                        width: this.carLayout.width,
+                        height: this.carLayout.height,
+                        cellSize: this.carLayout.cellSize,
+                        lastElementId: this.carLayout.lastElementId,
+                        elements: []
+                    };
+
+                    for (let item of this.carLayout.gridLayout) {
+                        let itemToSave = {
+                            i: item.i,
+                            x: item.x,
+                            y: item.y,
+                            w: item.w,
+                            h: item.h,
+                            type: item.type,
+                            seatNumber: item.seatNumber
+                        };
+
+                        if (typeof itemToSave.seatNumber === 'undefined') {
+                            delete itemToSave.seatNumber
+                        }
+
+                        layoutToSave.elements.push(itemToSave);
+                    }
+
+                    if (this.editingCarLayout) {
+                        await this.service.update(layoutToSave);
+                    } else {
+                        await this.service.create(layoutToSave);
+                    }
+
+                    this.saveLayoutDialog = false;
+                    // TODO: add notifications for CRUD on car layouts
+                    // this.notificationBanner = true;
+                    // this.notificationBannerMessage = 'Car Layout has been succesfully saved.';
+
+                    await this.$router.push({ name: 'carLayouts' });
+                } catch (error) {
+                    this.$emit('serverError', error.response.data.err.message);
+                }
+            },
+
+            changeSaveLayoutDialogVisibility() {
+                this.saveLayoutDialog = !this.saveLayoutDialog;
+
+                if (!this.saveLayoutDialog) {
+                    // We closed the save layout panel
+                    return;
+                }
+
+                this.newLayoutName = this.carLayout.name;
+                this.$refs.saveLayoutForm.resetValidation();
             }
         }
     }

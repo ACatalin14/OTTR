@@ -32,6 +32,21 @@ const carLayoutController = {
             });
     },
 
+    getByName: async (req, res) => {
+
+        await CarLayout
+            .find({ name: req.params.name })
+            .then((carLayouts) => {
+                if (carLayouts[0]) {
+                    return res.status(200).json(carLayouts[0]);
+                }
+                return res.status(500).json({err: CONSTANTS.ERRORS.CAR_LAYOUT_NOT_FOUND});
+            })
+            .catch(() => {
+                return res.status(500).json({ err: CONSTANTS.ERRORS.CAR_LAYOUT_NOT_FOUND });
+            });
+    },
+
     create: async (req, res) => {
 
         const carLayout = {
@@ -39,13 +54,15 @@ const carLayoutController = {
             seatingCapacity: req.body.seatingCapacity,
             width: req.body.width,
             height: req.body.height,
+            cellSize: req.body.cellSize,
+            lastElementId: req.body.lastElementId,
             elements: req.body.elements
         };
 
         let error = carLayoutController.checkIfArrayOfLayoutElements(carLayout.elements);
 
         if (error) {
-            return res.stat(400).json({err: error});
+            return res.status(400).json({err: error});
         }
 
         await CarLayout
@@ -68,6 +85,8 @@ const carLayoutController = {
             seatingCapacity: req.body.seatingCapacity,
             width: req.body.width,
             height: req.body.height,
+            cellSize: req.body.cellSize,
+            lastElementId: req.body.lastElementId,
             elements: req.body.elements
         };
 
@@ -82,7 +101,7 @@ const carLayoutController = {
         let error = carLayoutController.checkIfArrayOfLayoutElements(newCarLayoutFields.elements);
 
         if (error) {
-            return res.stat(400).json({err: error});
+            return res.status(400).json({err: error});
         }
 
         // Update
@@ -125,13 +144,24 @@ const carLayoutController = {
 
         for (let element of elements) {
             if (typeof element.type === 'undefined' ||
-                typeof element.row === 'undefined' ||
-                typeof element.column === 'undefined' ||
-                typeof element.height === 'undefined' ||
-                typeof element.width === 'undefined' ||
-                typeof element.resizable === 'undefined'
+                typeof element.i === 'undefined' ||
+                typeof element.x === 'undefined' ||
+                typeof element.y === 'undefined' ||
+                typeof element.w === 'undefined' ||
+                typeof element.h === 'undefined'
             ) {
                 return CONSTANTS.ERRORS.LAYOUT_ELEMENT_UNKNOWN_TYPE;
+            }
+
+            if ([
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT,
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_RIGHT,
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_UP,
+                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_DOWN
+                ].includes(element.type) &&
+                typeof element.seatNumber === 'undefined'
+            ) {
+                return CONSTANTS.ERRORS.LAYOUT_ELEMENT_SEAT_NUMBER_MISSING;
             }
         }
 
