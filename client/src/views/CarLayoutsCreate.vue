@@ -55,6 +55,7 @@
                 color="primary"
                 class="ma-0 mr-2"
                 outlined
+                :disabled="!layoutPropFormValid"
                 @click="changeSaveLayoutDialogVisibility()"
             >
                 <strong>Save layout</strong>
@@ -80,33 +81,39 @@
         <v-row>
             <v-col cols="12" md="3">
                 <v-card class="fill-height">
-                    <v-card-title> Layout Properties </v-card-title>
-                    <v-card-text class="px-0">
-                        <v-text-field
-                            v-model.number="carLayout.width"
-                            label="Width (cells)"
-                            :rules="carLayoutWidthRules"
-                            type="number"
-                            class="ml-5 mr-12"
-                            prepend-icon="mdi-arrow-left-right"
-                        ></v-text-field>
-                        <v-text-field
-                            v-model.number="carLayout.height"
-                            label="Height (cells)"
-                            :rules="carLayoutHeightRules"
-                            type="number"
-                            class="ml-5 mr-12"
-                            prepend-icon="mdi-arrow-up-down"
-                        ></v-text-field>
-                        <v-text-field
-                            v-model.number="carLayout.cellSize"
-                            label="Cell Size (pixels)"
-                            :rules="cellSizeRules"
-                            type="number"
-                            class="ml-5 mr-12"
-                            prepend-icon="mdi-arrow-expand"
-                        ></v-text-field>
-                    </v-card-text>
+                    <v-form
+                        v-model="layoutPropFormValid"
+                        ref="layoutPropForm"
+                        lazy-validation
+                    >
+                        <v-card-title> Layout Properties </v-card-title>
+                        <v-card-text class="px-0">
+                            <v-text-field
+                                v-model.number="carLayout.width"
+                                label="Width (cells)"
+                                :rules="carLayoutWidthRules"
+                                type="number"
+                                class="ml-5 mr-12"
+                                prepend-icon="mdi-arrow-left-right"
+                            ></v-text-field>
+                            <v-text-field
+                                v-model.number="carLayout.height"
+                                label="Height (cells)"
+                                :rules="carLayoutHeightRules"
+                                type="number"
+                                class="ml-5 mr-12"
+                                prepend-icon="mdi-arrow-up-down"
+                            ></v-text-field>
+                            <v-text-field
+                                v-model.number="carLayout.cellSize"
+                                label="Cell Size (pixels)"
+                                :rules="cellSizeRules"
+                                type="number"
+                                class="ml-5 mr-12"
+                                prepend-icon="mdi-arrow-expand"
+                            ></v-text-field>
+                        </v-card-text>
+                    </v-form>
                 </v-card>
             </v-col>
             <v-col cols="12" md="9">
@@ -223,7 +230,6 @@
                             </v-row>
                         </v-card-text>
                     </v-form>
-
                 </v-card>
             </v-col>
         </v-row>
@@ -326,6 +332,7 @@
                 service: CrudService.getCrudServiceForResource('car-layout'),
                 saveLayoutDialog: false,
                 saveLayoutFormValid: true,
+                layoutPropFormValid: true,
                 editingCarLayout: false,
                 carLayout: {
                     _id: null,
@@ -339,8 +346,8 @@
                 },
                 newLayoutName: '',
                 newElementType: CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT,
-                newElementWidth: 3,
-                newElementHeight: 3,
+                newElementWidth: 4,
+                newElementHeight: 4,
                 newElementSeatNumber: 10,
                 newElementImagePath: 'seat-left.png',
                 gridMargin: 1,
@@ -605,6 +612,11 @@
                         return;
                     }
 
+                    if (!this.$refs.layoutPropForm.validate()) {
+                        this.layoutPropFormValid = false;
+                        return;
+                    }
+
                     const layoutToSave = {
                         _id: this.carLayout._id,
                         name: this.newLayoutName,
@@ -636,14 +648,17 @@
 
                     if (this.editingCarLayout) {
                         await this.service.update(layoutToSave);
+                        await this.$store.dispatch('showNotification', {
+                            msg: 'Car Layout has been successfully saved.'
+                        });
                     } else {
                         await this.service.create(layoutToSave);
+                        await this.$store.dispatch('showNotification', {
+                            msg: 'New Car Layout has been successfully created.'
+                        });
                     }
 
                     this.saveLayoutDialog = false;
-                    // TODO: add notifications for CRUD on car layouts
-                    // this.notificationBanner = true;
-                    // this.notificationBannerMessage = 'Car Layout has been succesfully saved.';
 
                     await this.$router.push({ name: 'carLayouts' });
                 } catch (error) {
@@ -660,7 +675,10 @@
                 }
 
                 this.newLayoutName = this.carLayout.name;
-                this.$refs.saveLayoutForm.resetValidation();
+
+                if (this.$refs.saveLayoutForm) {
+                    this.$refs.saveLayoutForm.resetValidation();
+                }
             }
         }
     }

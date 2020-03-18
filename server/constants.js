@@ -73,6 +73,10 @@ const CONSTANTS = {
         CAR_LAYOUT_NOT_FOUND: {
             code: 1013,
             message: 'The car layout you\'re looking for does not exist'
+        },
+        NAME_IS_TAKEN: {
+            code: 1014,
+            message: 'The name you have chosen is already taken'
         }
     }
 };

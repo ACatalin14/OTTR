@@ -4,7 +4,9 @@
         <v-divider></v-divider>
         <v-row justify="space-between" class="mt-3">
             <v-col cols="12">
-                <CarLayoutsTable @serverError="onServerError"></CarLayoutsTable>
+                <CarLayoutsTable
+                    @serverError="onServerError"
+                ></CarLayoutsTable>
             </v-col>
         </v-row>
     </GrayContainer>

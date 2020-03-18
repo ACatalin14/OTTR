@@ -73,7 +73,12 @@ const carLayoutController = {
                 }
                 return res.status(500).json({err: CONSTANTS.ERRORS.DB_OBJECT_CREATE_FAILED});
             })
-            .catch(() => {
+            .catch((err) => {
+                if (err.errmsg.includes('duplicate key error') &&
+                    err.errmsg.includes('name')
+                ) {
+                    return res.status(400).json({err: CONSTANTS.ERRORS.NAME_IS_TAKEN});
+                }
                 return res.status(500).json({err: CONSTANTS.ERRORS.DB_OBJECT_CREATE_FAILED});
             });
     },
@@ -116,7 +121,12 @@ const carLayoutController = {
                 }
                 return res.status(500).json({ err: CONSTANTS.ERRORS.DB_OBJECT_UPDATE_FAILED });
             })
-            .catch(() => {
+            .catch((err) => {
+                if (err.errmsg.includes('duplicate key error') &&
+                    err.errmsg.includes('name')
+                ) {
+                    return res.status(400).json({err: CONSTANTS.ERRORS.NAME_IS_TAKEN});
+                }
                 return res.status(500).json({ err: CONSTANTS.ERRORS.DB_OBJECT_UPDATE_FAILED });
             });
     },
