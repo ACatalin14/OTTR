@@ -13,8 +13,7 @@ import TheRoutes from "../views/TheRoutes";
 import TheMiscellaneous from "../views/TheMiscellaneous";
 import TheStudents from "../views/TheStudents";
 import CarLayouts from "../views/CarLayouts";
-import CarLayoutsCreate from "../views/CarLayoutsCreate";
-import CarLayoutsShow from "../views/CarLayoutsShow";
+import CarLayoutsForm from "../views/CarLayoutsForm";
 
 Vue.use(VueRouter);
 
@@ -63,16 +62,8 @@ const routes = [
     },
     {
         path: '/railway-management/car-layouts/create',
-        name: 'carLayoutsCreate',
-        component: CarLayoutsCreate,
-        meta: {
-            requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
-        }
-    },
-    {
-        path: '/railway-management/car-layouts/:carLayoutName',
-        name: 'carLayoutsShow',
-        component: CarLayoutsShow,
+        name: 'carLayoutsForm',
+        component: CarLayoutsForm,
         meta: {
             requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
         }
@@ -80,7 +71,7 @@ const routes = [
     {
         path: '/railway-management/car-layouts/edit/:carLayoutName',
         name: 'carLayoutsEdit',
-        component: CarLayoutsCreate,
+        component: CarLayoutsForm,
         meta: {
             requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
         }

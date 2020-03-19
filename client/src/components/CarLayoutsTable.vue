@@ -25,7 +25,7 @@
                     color="primary"
                     class="pl-3 pr-5 text-capitalize"
                     outlined
-                    :to="{ name: 'carLayoutsCreate' }"
+                    :to="{ name: 'carLayoutsForm' }"
                 >
                     <v-icon class="mr-1">mdi-draw</v-icon>
                     <strong>Create New Layout</strong>
@@ -34,22 +34,21 @@
                     v-show="$vuetify.breakpoint.smAndDown"
                     color="primary"
                     icon
-                    :to="{ name: 'carLayoutsCreate' }"
+                    :to="{ name: 'carLayoutsForm' }"
                 >
                     <v-icon>mdi-plus-circle</v-icon>
                 </v-btn>
             </v-toolbar>
         </template>
         <template v-slot:item.action="{ item }">
-            <router-link :to="{ name: 'carLayoutsShow', params: { carLayoutName: item.name } }">
-                <v-icon
-                    small
-                    class="mr-2"
-                    color="accent"
-                >
-                    mdi-eye
-                </v-icon>
-            </router-link>
+            <v-icon
+                small
+                class="mr-2"
+                color="accent"
+                @click="showCarLayout(item)"
+            >
+                mdi-eye
+            </v-icon>
             <router-link :to="{ name: 'carLayoutsEdit', params: { carLayoutName: item.name } }">
                 <v-icon
                     small
@@ -114,6 +113,10 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+            },
+
+            showCarLayout(carLayout) {
+                this.$emit('showCarLayout', carLayout);
             }
         }
     }

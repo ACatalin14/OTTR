@@ -164,10 +164,10 @@ const carLayoutController = {
             }
 
             if ([
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT,
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_RIGHT,
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_UP,
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_DOWN
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_LEFT,
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_RIGHT,
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_UP,
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_DOWN
                 ].includes(element.type) &&
                 typeof element.seatNumber === 'undefined'
             ) {

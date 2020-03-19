@@ -4,14 +4,16 @@ const CONSTANTS = {
         USER: 2,
         GUEST: 3
     },
-    LAYOUT_ELEMENTS: {
-        SEAT_LEFT: 1,
-        SEAT_RIGHT: 2,
-        SEAT_UP: 3,
-        SEAT_DOWN: 4,
-        LUGGAGE_RACK: 5,
-        TABLE: 6,
-        WALL: 7
+    LAYOUT: {
+        ELEMENTS: {
+            SEAT_LEFT: 1,
+            SEAT_RIGHT: 2,
+            SEAT_UP: 3,
+            SEAT_DOWN: 4,
+            LUGGAGE_RACK: 5,
+            TABLE: 6,
+            WALL: 7
+        }
     },
     ERRORS: {
         OTHER: {

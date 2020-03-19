@@ -18,14 +18,17 @@ const CONSTANTS = {
             USER_ROLES.GUEST
         ]
     },
-    LAYOUT_ELEMENTS: {
-        SEAT_LEFT: 1,
-        SEAT_RIGHT: 2,
-        SEAT_UP: 3,
-        SEAT_DOWN: 4,
-        LUGGAGE_RACK: 5,
-        TABLE: 6,
-        WALL: 7
+    LAYOUT: {
+        GRID_MARGIN: 1,
+        ELEMENTS: {
+            SEAT_LEFT: 1,
+            SEAT_RIGHT: 2,
+            SEAT_UP: 3,
+            SEAT_DOWN: 4,
+            LUGGAGE_RACK: 5,
+            TABLE: 6,
+            WALL: 7
+        }
     },
     ERRORS: {
         LOGIN_FAILED: 'Login failed. Please check your credentials.',

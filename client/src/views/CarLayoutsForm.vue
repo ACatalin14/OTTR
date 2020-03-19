@@ -256,8 +256,9 @@
                 >
                     <grid-layout
                         :layout.sync="carLayout.gridLayout"
-                        :col-num="carLayout.width"
-                        :row-height="carLayout.cellSize"
+                        :col-num="colNum"
+                        :maxRows="maxRows"
+                        :row-height="rowHeight"
                         :is-draggable="true"
                         :is-resizable="true"
                         :is-mirrored="false"
@@ -265,8 +266,6 @@
                         :margin="gridMargins"
                         :use-css-transforms="true"
                         :prevent-collision="true"
-                        :isResizable="true"
-                        :maxRows="carLayout.height"
                     >
                         <grid-item v-for="item in carLayout.gridLayout"
                                    :x="item.x"
@@ -286,7 +285,7 @@
                             >
                                 <template v-slot:activator="{ on }">
                                     <v-img
-                                        :src="require('@/assets/' + getPngNameFromType(item.type))"
+                                        :src="require('@/assets/' + getPngNameFromElementType(item.type))"
                                         alt="Element Image"
                                         transition="scale-transition"
                                         :width=" item.w * carLayout.cellSize + gridMargin * (item.w - 1) "
@@ -321,7 +320,7 @@
     import CarLayoutService from "../services/carLayoutService";
 
     export default {
-        name: "CarLayoutCreate",
+        name: "CarLayoutsForm",
         components: {
             GrayContainer,
             GridLayout: VueGridLayout.GridLayout,
@@ -345,21 +344,21 @@
                     gridLayout: []
                 },
                 newLayoutName: '',
-                newElementType: CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT,
-                newElementWidth: 4,
-                newElementHeight: 4,
+                newElementType: CONSTANTS.LAYOUT.ELEMENTS.SEAT_LEFT,
+                newElementWidth: 3,
+                newElementHeight: 3,
                 newElementSeatNumber: 10,
                 newElementImagePath: 'seat-left.png',
-                gridMargin: 1,
+                gridMargin: CONSTANTS.LAYOUT.GRID_MARGIN,
                 elementFormValid: true,
                 layoutElementTypes: [
-                    { text: 'Seat (left)', value: CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT },
-                    { text: 'Seat (right)', value: CONSTANTS.LAYOUT_ELEMENTS.SEAT_RIGHT },
-                    { text: 'Seat (up)', value: CONSTANTS.LAYOUT_ELEMENTS.SEAT_UP },
-                    { text: 'Seat (down)', value: CONSTANTS.LAYOUT_ELEMENTS.SEAT_DOWN },
-                    { text: 'Luggage Rack', value: CONSTANTS.LAYOUT_ELEMENTS.LUGGAGE_RACK },
-                    { text: 'Table', value: CONSTANTS.LAYOUT_ELEMENTS.TABLE },
-                    { text: 'Wall', value: CONSTANTS.LAYOUT_ELEMENTS.WALL },
+                    { text: 'Seat (left)', value: CONSTANTS.LAYOUT.ELEMENTS.SEAT_LEFT },
+                    { text: 'Seat (right)', value: CONSTANTS.LAYOUT.ELEMENTS.SEAT_RIGHT },
+                    { text: 'Seat (up)', value: CONSTANTS.LAYOUT.ELEMENTS.SEAT_UP },
+                    { text: 'Seat (down)', value: CONSTANTS.LAYOUT.ELEMENTS.SEAT_DOWN },
+                    { text: 'Luggage Rack', value: CONSTANTS.LAYOUT.ELEMENTS.LUGGAGE_RACK },
+                    { text: 'Table', value: CONSTANTS.LAYOUT.ELEMENTS.TABLE },
+                    { text: 'Wall', value: CONSTANTS.LAYOUT.ELEMENTS.WALL },
                 ],
                 layoutNameRules: [
                     name => !!name || 'Layout name is required',
@@ -399,7 +398,7 @@
             }
         },
         async created() {
-            if (this.$route.name === 'carLayoutsCreate') {
+            if (this.$route.name === 'carLayoutsForm') {
                 return;
             }
 
@@ -449,37 +448,49 @@
 
             sheetWidth() {
                 return this.carLayout.cellSize * this.carLayout.width + this.gridMargin * (this.carLayout.width - 1)
-                    + 2 * 4 * 5;   // plus padding
+                    + 2 * 4 * 5;    // plus padding
             },
 
             sheetHeight() {
                 return this.carLayout.cellSize * this.carLayout.height + this.gridMargin * (this.carLayout.height - 1)
-                    + 2 * 4 * 5;
+                    + 2 * 4 * 5;    // plus padding
+            },
+
+            colNum() {
+                return Number.isInteger(this.carLayout.width) ? this.carLayout.width : 0
+            },
+
+            maxRows() {
+                return Number.isInteger(this.carLayout.height) ? this.carLayout.height : 0;
+            },
+
+            rowHeight() {
+                return Number.isInteger(this.carLayout.cellSize) ? this.carLayout.cellSize : 0;
             }
         },
         methods: {
             checkElementTypeIsSeat(elementType) {
                 return [
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT,
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_RIGHT,
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_UP,
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_DOWN
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_LEFT,
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_RIGHT,
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_UP,
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_DOWN
                 ].includes(elementType);
             },
 
             checkElementTypeIsSquare(elementType) {
                 return [
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT,
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_RIGHT,
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_UP,
-                    CONSTANTS.LAYOUT_ELEMENTS.SEAT_DOWN,
-                    CONSTANTS.LAYOUT_ELEMENTS.LUGGAGE_RACK
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_LEFT,
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_RIGHT,
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_UP,
+                    CONSTANTS.LAYOUT.ELEMENTS.SEAT_DOWN,
+                    CONSTANTS.LAYOUT.ELEMENTS.LUGGAGE_RACK
                 ].includes(elementType);
             },
 
             updateElementFields() {
 
-                this.newElementImagePath = this.getPngNameFromType(this.newElementType);
+                this.newElementImagePath = this.getPngNameFromElementType(this.newElementType);
 
                 if (this.checkElementTypeIsSquare(this.newElementType)) {
                     this.newElementHeight = this.newElementWidth;
@@ -487,26 +498,9 @@
 
             },
 
-            getPngNameFromType(elementType) {
+            getPngNameFromElementType(elementType) {
 
-                switch (elementType) {
-                    case CONSTANTS.LAYOUT_ELEMENTS.SEAT_LEFT:
-                        return 'seat-left.png';
-                    case CONSTANTS.LAYOUT_ELEMENTS.SEAT_RIGHT:
-                        return 'seat-right.png';
-                    case CONSTANTS.LAYOUT_ELEMENTS.SEAT_UP:
-                        return 'seat-up.png';
-                    case CONSTANTS.LAYOUT_ELEMENTS.SEAT_DOWN:
-                        return 'seat-down.png';
-                    case CONSTANTS.LAYOUT_ELEMENTS.LUGGAGE_RACK:
-                        return 'luggage-rack.png';
-                    case CONSTANTS.LAYOUT_ELEMENTS.TABLE:
-                        return 'table.png';
-                    case CONSTANTS.LAYOUT_ELEMENTS.WALL:
-                        return 'wall.png';
-                    default:
-                        return 'no-existing-png-for-this-type';
-                }
+                return CarLayoutService.getPngNameFromElementType(elementType);
             },
 
             addNewElement() {
