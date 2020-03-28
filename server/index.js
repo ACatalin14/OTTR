@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors');
 
 const config = require('./config');
 const seederService = require('./services/seederService');
@@ -17,7 +16,7 @@ mongoose
         console.log('Connected to the database.');
     })
     .catch(err => {
-        console.log({database_err: err});
+        console.error({database_err: err});
     });
 
 app.use(bodyParser.urlencoded({ extended: false }));

@@ -8,51 +8,71 @@
         class="elevation-3"
     >
         <template v-slot:top>
-            <v-toolbar flat color="white">
-                <v-toolbar-title class="headline indigo--text text-capitalize"> {{ entityNamePlural }}</v-toolbar-title>
-                <v-spacer v-if="withSearch"></v-spacer>
-                <v-text-field
-                    v-if="withSearch"
-                    v-model="searchBar"
-                    append-icon="mdi-magnify"
-                    label="Search"
-                    single-line
-                    hide-details
-                    clearable
-                ></v-text-field>
-                <v-spacer></v-spacer>
-                <v-dialog v-model="formDialog" max-width="500px">
-                    <template v-slot:activator="{ on }">
-                        <v-icon color="primary" v-on="on" >mdi-plus-circle</v-icon>
-                    </template>
-                    <v-card v-if="formDialog">
-                        <v-form
-                            v-model="itemFormValid"
-                            ref="itemForm"
-                            lazy-validation
-                            @submit.prevent="save"
+            <v-toolbar flat color="white" :class="tallToolbar">
+                <v-row class="ma-0 pa-0">
+                    <v-col class="ma-0 pa-0">
+                        <v-row class="ma-0 pa-0">
+                            <v-toolbar-title class="headline indigo--text text-capitalize"> {{ entityNamePlural }}</v-toolbar-title>
+                            <v-spacer></v-spacer>
+                            <v-text-field
+                                v-if="withSearch && $vuetify.breakpoint.mdAndUp"
+                                v-model="searchBar"
+                                append-icon="mdi-magnify"
+                                label="Search"
+                                single-line
+                                hide-details
+                                clearable
+                            ></v-text-field>
+                            <v-spacer></v-spacer>
+                            <v-dialog v-model="formDialog" max-width="500px">
+                                <template v-slot:activator="{ on }">
+                                    <v-icon color="primary" v-on="on" >mdi-plus-circle</v-icon>
+                                </template>
+                                <v-card v-if="formDialog">
+                                    <v-form
+                                        v-model="itemFormValid"
+                                        ref="itemForm"
+                                        lazy-validation
+                                        @submit.prevent="save"
+                                    >
+                                        <v-card-title>
+                                            <span class="headline text-capitalize">{{ formTitle }}</span>
+                                        </v-card-title>
+                                        <v-divider></v-divider>
+                                        <v-card-text class="py-0">
+
+                                            <slot
+                                                name="form"
+                                                :editedItem="editedItem"
+                                                class="pb-0"
+                                            ></slot>
+
+                                        </v-card-text>
+                                        <v-card-actions class="pt-0">
+                                            <v-spacer></v-spacer>
+                                            <v-btn color="error" text @click="close">Cancel</v-btn>
+                                            <v-btn color="primary" text :disabled="!itemFormValid" type="submit">Save</v-btn>
+                                        </v-card-actions>
+                                    </v-form>
+                                </v-card>
+                            </v-dialog>
+                        </v-row>
+                        <v-row
+                            v-if="withSearchSmallScreen"
+                            class="ma-0 pa-0 mt-3"
                         >
-                            <v-card-title>
-                                <span class="headline text-capitalize">{{ formTitle }}</span>
-                            </v-card-title>
-                            <v-divider></v-divider>
-                            <v-card-text class="py-0">
-
-                                <slot
-                                    name="form"
-                                    :editedItem="editedItem"
-                                    class="pb-0"
-                                ></slot>
-
-                            </v-card-text>
-                            <v-card-actions class="pt-0">
-                                <v-spacer></v-spacer>
-                                <v-btn color="error" text @click="close">Cancel</v-btn>
-                                <v-btn color="primary" text :disabled="!itemFormValid" type="submit">Save</v-btn>
-                            </v-card-actions>
-                        </v-form>
-                    </v-card>
-                </v-dialog>
+                            <v-text-field
+                                v-model="searchBar"
+                                append-icon="mdi-magnify"
+                                class="ma-0 pa-0"
+                                label="Search"
+                                single-line
+                                hide-details
+                                clearable
+                            ></v-text-field>
+                        </v-row>
+                    </v-col>
+                </v-row>
             </v-toolbar>
         </template>
         <template v-slot:item.action="{ item }">
@@ -117,6 +137,17 @@
                 const capitalizedName = this.entity[0].toUpperCase() + this.entity.slice(1);
                 return !this.editingItem ? 'New ' + capitalizedName : 'Edit ' + capitalizedName;
             },
+
+            withSearchSmallScreen() {
+                return this.withSearch && this.$vuetify.breakpoint.smAndDown;
+            },
+
+            tallToolbar() {
+                return {
+                    'pt-6': this.withSearchSmallScreen,
+                    'mb-12': this.withSearchSmallScreen
+                }
+            }
         },
 
         watch: {

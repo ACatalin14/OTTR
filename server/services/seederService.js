@@ -1,5 +1,7 @@
+// TODO: write some correct seeders for different entities
+
 const faker = require('faker');
-const Train = require('../models/train');
+const Train = {}; //= require('../models/train');
 const config = require('../config');
 
 module.exports = {

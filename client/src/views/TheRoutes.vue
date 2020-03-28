@@ -6,6 +6,11 @@
 
 <script>
     export default {
-        name: "TheRoutes"
+        name: "TheRoutes",
+        data() {
+            return {
+
+            }
+        }
     }
 </script>

@@ -26,6 +26,7 @@ const carLayoutSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+
     elements: [
         new mongoose.Schema({
             i: {
