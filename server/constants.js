@@ -79,6 +79,14 @@ const CONSTANTS = {
         NAME_IS_TAKEN: {
             code: 1014,
             message: 'The name you have chosen is already taken'
+        },
+        BAD_REQUEST_ROUTE_CREATION: {
+            code: 1015,
+            message: 'Your request is missing critical fields'
+        },
+        ROUTE_STATION_CREATE_FAILED: {
+            code: 1015,
+            message: 'Route Station object could not be created'
         }
     }
 };

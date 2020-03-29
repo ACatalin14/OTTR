@@ -1,6 +1,8 @@
-// TODO: edit this file
 const CONSTANTS = require('../constants');
 const Route = require("../models/route");
+const routeStationController = require("./routeStationController");
+const routeCarTemplateController = require("./routeCarTemplateController");
+const routeRideController = require("./routeRideController");
 
 module.exports = {
     index: async (req, res) => {
@@ -21,35 +23,98 @@ module.exports = {
         });
     },
 
+    /**
+     * Example of request to create a route:
+         {
+            "departureTime": 1585394277138,
+            "arrivalTime": 1585400641466,
+            "activeWeekDays": ["Mon", "Tue", "Wed", "Thu", "Fri"],
+            "noOfGeneratedRides": 5,
+            "train": {
+                "number": 12015,
+                "trainCategoryId": "5e628ab922c0da319858ba07"
+            },
+            "carTemplates": [
+                {
+                    "orderNo": 1,
+                    "number": "1",
+                    "departureStationId": "5e52a3c39b5c7969448f114a",
+                    "arrivalStationId": "5e58275a5cb3cf671ced6265",
+                    "travelClassId": "5e629540fddb7e2d702b4de2",
+                    "carLayoutId": "5e73c1ea6c0ba91268fedb8d"
+                }
+            ],
+            "routeStations": [
+                {
+                    "orderNo": 1,
+                    "distance": 0,
+                    "departureTime": 1585394277138,
+                    "arrivalTime": 0,
+                    "stationId": "5e52a3c39b5c7969448f114a"
+                },
+                {
+                    "orderNo": 2,
+                    "distance": 120,
+                    "departureTime": 1585394277700,
+                    "arrivalTime": 1585394277500,
+                    "stationId": "5e52a5cc9b5c7969448f114e"
+                },
+                {
+                    "orderNo": 3,
+                    "distance": 220,
+                    "departureTime": 0,
+                    "arrivalTime": 1585400641466,
+                    "stationId": "5e58275a5cb3cf671ced6265"
+                }
+            ]
+         }
+     *
+     * @param req
+     * @param res
+     * @returns {Promise<void>}
+     */
     create: async (req, res) => {
-        const route = {
+
+        if (req.body.departureTime === undefined || req.body.arrivalTime === undefined || !req.body.activeWeekDays ||
+            !req.body.train || !req.body.carTemplates || !req.body.routeStations
+        ) {
+            return res.status(400).json({err: CONSTANTS.ERRORS.BAD_REQUEST_ROUTE_CREATION});
+        }
+
+        let route = {
             departureTime: req.body.departureTime,
             arrivalTime: req.body.arrivalTime,
-            activeWeekDays: req.body.activeWeekDays
+            activeWeekDays: req.body.activeWeekDays,
+            train: {
+                number: req.body.train.number,
+                trainCategory: req.body.train.trainCategoryId
+            }
         };
 
-        if (req.body.train) {
-            route.train = req.body.train;
-        }
-
-        if (req.body.carTemplates) {
-            route.carTemplates = req.body.carTemplates;
-        }
-
-        if (req.body.rides) {
-            route.rides = req.body.rides;
-        }
-
-        if (req.body.stations) {
-            route.stations = req.body.stations;
-        }
-
-        await Route.create(route, (err, createdRoute) => {
-            if (err) {
+        await Route
+            .create(route)
+            .then( (createdRoute) => {
+                route = createdRoute;
+            })
+            .catch( () => {
                 return res.status(500).json({err: CONSTANTS.ERRORS.DB_OBJECT_CREATE_FAILED});
+            });
+
+        try {
+            route = await routeStationController.createManyForRoute(req, res, route, req.body.routeStations);
+            route = await routeCarTemplateController.createManyForRoute(req, res, route, req.body.carTemplates);
+
+            if (req.body.noOfGeneratedRides || req.body.generateRidesFrom || req.body.generateRidesUntil) {
+
+                route = await routeRideController.createManyForRoute(req, res, route);
             }
-            return res.status(201).json(createdRoute);
-        });
+
+        } catch (e) {
+            // response is already set inside called methods
+            return;
+        }
+
+        return res.status(200).json(route);
     },
 
     update: async (req, res) => {

@@ -5,8 +5,7 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 const routeStationSchema = mongoose.Schema({
     orderNo: {
         type: Number,
-        required: true,
-        unique: true
+        required: true
     },
     distance: {
         type: Number,

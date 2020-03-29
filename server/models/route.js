@@ -25,7 +25,7 @@ const routeSchema = mongoose.Schema({
 
     rides: [ rideSchema ],
 
-    stations: [{
+    routeStations: [{
         type: ObjectId,
         ref: 'RouteStation'
     }]

@@ -7,6 +7,10 @@ const carTemplateSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    orderNo: {
+        type: Number,
+        required: true
+    },
     departureStation: {
         type: ObjectId,
         ref: 'RouteStation'
