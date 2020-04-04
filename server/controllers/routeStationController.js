@@ -51,7 +51,7 @@ module.exports = {
                 }
             }, {new: true});
 
-            route = Object.assign({}, updatedRoute['_doc']);
+            route = JSON.parse(JSON.stringify(updatedRoute['_doc']));
         } catch (err) {
             res.status(500).json({ err: CONSTANTS.ERRORS.DB_OBJECT_UPDATE_FAILED });
             throw err;

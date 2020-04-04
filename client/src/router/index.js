@@ -14,6 +14,7 @@ import TheMiscellaneous from "../views/TheMiscellaneous";
 import TheStudents from "../views/TheStudents";
 import CarLayouts from "../views/CarLayouts";
 import CarLayoutsForm from "../views/CarLayoutsForm";
+import RoutesForm from "../views/RoutesForm";
 
 Vue.use(VueRouter);
 
@@ -48,6 +49,22 @@ const routes = [
         path: '/railway-management/routes',
         name: 'routes',
         component: TheRoutes,
+        meta: {
+            requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
+        }
+    },
+    {
+        path: '/railway-management/routes/create',
+        name: 'routesCreate',
+        component: RoutesForm,
+        meta: {
+            requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
+        }
+    },
+    {
+        path: '/railway-management/routes/edit/:routeName',
+        name: 'routesEdit',
+        component: RoutesForm,
         meta: {
             requiredAuthGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY
         }

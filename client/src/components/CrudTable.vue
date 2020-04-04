@@ -77,6 +77,24 @@
         </template>
         <template v-slot:item.action="{ item }">
             <v-icon
+                v-show="withChangeOrder"
+                small
+                class="mr-1"
+                color="accent"
+                @click="moveUpItem(item)"
+            >
+                mdi-menu-up-outline
+            </v-icon>
+            <v-icon
+                v-show="withChangeOrder"
+                small
+                class="mr-2"
+                color="accent"
+                @click="moveDownItem(item)"
+            >
+                mdi-menu-down-outline
+            </v-icon>
+            <v-icon
                 small
                 class="mr-2"
                 color="primary"
@@ -117,6 +135,14 @@
             service: {
                 type: Object,
                 required: true
+            },
+            withChangeOrder: {
+                type: Boolean,
+                default: false
+            },
+            disableSort: {
+                type: Boolean,
+                default: false
             }
         },
 
@@ -159,20 +185,22 @@
         created() {
             this.initialize();
             this.tableHeaders = this.headers.concat(this.tableHeaders);
-            this.editedItem = Object.assign({}, this.defaultItem);
+            this.editedItem = JSON.parse(JSON.stringify(this.defaultItem));
         },
 
         methods: {
             async initialize() {
                 try {
-                    this.items = await this.service.index();
+                    this.items = JSON.parse(JSON.stringify(
+                        await this.service.index()
+                    ));
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
             },
 
             editItem(item) {
-                this.editedItem = Object.assign({}, item);
+                this.editedItem = JSON.parse(JSON.stringify(item));
                 this.editingItem = true;
                 this.formDialog = true
             },
@@ -181,7 +209,10 @@
 
                 try {
                     await this.service.delete(item._id);
-                    this.items = await this.service.index();
+                    this.items = JSON.parse(JSON.stringify(
+                        await this.service.index()
+                    ));
+                    this.$emit('deletedItem', item);
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
@@ -190,7 +221,7 @@
             close() {
                 this.formDialog = false;
                 setTimeout(() => {
-                    this.editedItem = Object.assign({}, this.defaultItem);
+                    this.editedItem = JSON.parse(JSON.stringify(this.defaultItem));
                     this.editingItem = false;
                 }, 300);
             },
@@ -204,8 +235,10 @@
 
                     if (this.editingItem) {
                         await this.service.update(this.editedItem);
+                        this.$emit('updatedItem', this.editingItem);
                     } else {
                         await this.service.create(this.editedItem);
+                        this.$emit('createdItem', this.editingItem);
                     }
 
                 } catch (error) {
@@ -213,13 +246,43 @@
                 }
 
                 try {
-                    this.items = await this.service.index();
+                    this.items = JSON.parse(JSON.stringify(
+                        await this.service.index()
+                    ));
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
 
                 this.close();
             },
+
+            moveUpItem(item) {
+
+                const index = this.items.indexOf(item);
+
+                if (index < 1) {
+                    // do not move up first element of array (0)
+                    return;
+                }
+
+                this.items = this.service.moveUp(index);
+
+                this.$emit('movedUpItem', index);
+            },
+
+            moveDownItem(item) {
+
+                const index = this.items.indexOf(item);
+
+                if (index === -1 || index === this.items.length - 1) {
+                    // do not move down last element of array (n)
+                    return;
+                }
+
+                this.items = this.service.moveDown(index);
+
+                this.$emit('movedDownItem', index);
+            }
         }
     }
 </script>

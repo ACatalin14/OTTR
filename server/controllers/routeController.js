@@ -6,12 +6,30 @@ const routeRideController = require("./routeRideController");
 
 module.exports = {
     index: async (req, res) => {
-        await Route.find({}, (err, route) => {
-            if (err) {
-                return res.status(500).json({err: CONSTANTS.ERRORS.OTHER});
-            }
-            res.status(200).json(route);
-        });
+        await Route.find({})
+            .populate('train.trainCategory')
+            .populate({
+                path: 'routeStations carTemplates.departureStation carTemplates.arrivalStation carTemplates.travelClass carTemplates.carLayout',
+                populate: {
+                    path: 'station'
+                }
+            })
+            .populate({
+                path: 'rides.cars',
+                populate: {
+                    path: 'departureStation arrivalStation travelClass carLayout',
+                    populate: {
+                        path: 'station'
+                    }
+                }
+            })
+            .exec( async (err, route) => {
+                if (err) {
+                    return res.status(500).json({err: CONSTANTS.ERRORS.OTHER});
+                }
+
+                res.status(200).json(route);
+            })
     },
 
     show: async (req, res) => {

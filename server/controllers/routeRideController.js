@@ -39,9 +39,7 @@ module.exports = {
         updatedRoute = await Route.findByIdAndUpdate(updatedRoute._id, updatedRoute, {new: true});
         updatedRoute = updatedRoute['_doc'];
 
-        console.log(updatedRoute);
-
-        return Object.assign({}, updatedRoute);
+        return JSON.parse(JSON.stringify(updatedRoute));
     },
 
     /**

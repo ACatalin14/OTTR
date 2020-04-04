@@ -31,6 +31,6 @@ module.exports = {
 
         const updatedRoute = await Route.findByIdAndUpdate(route._id, route, {new: true});
 
-        return Object.assign({}, updatedRoute['_doc']);
+        return JSON.parse(JSON.stringify(updatedRoute['_doc']));
     }
 };

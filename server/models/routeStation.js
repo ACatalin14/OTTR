@@ -36,6 +36,6 @@ const routeStationSchema = mongoose.Schema({
     },
 });
 
-const RouteStation = mongoose.model('RouteStation', routeStationSchema);
+const RouteStation = mongoose.model('RouteStation', routeStationSchema, 'routeStations');
 
 module.exports = RouteStation;
