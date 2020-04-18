@@ -52,7 +52,7 @@ export default {
 
         carLayoutFrontend.gridLayout = [];
         for (let element of carLayoutDb.elements) {
-            carLayoutFrontend.gridLayout.push(element);
+            carLayoutFrontend.gridLayout.push(JSON.parse(JSON.stringify(element)));
         }
 
         carLayoutFrontend.sheetWidth =  carLayoutDb.cellSize * carLayoutDb.width + CONSTANTS.LAYOUT.GRID_MARGIN *

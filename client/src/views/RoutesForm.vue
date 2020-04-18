@@ -154,7 +154,7 @@
                                     </v-col>
                                 </v-row>
                                 <v-row>
-                                    <v-col cols="12" md="6">
+                                    <v-col cols="12" md="8">
                                         <v-select
                                             v-model="route.activeWeekDays"
                                             :items="activeDaysItems"
@@ -174,8 +174,25 @@
                         @changedRouteStations="onChangeRouteStations"
                     ></RouteStationsPanel>
                 </v-tab-item>
-                <v-tab-item>
-                    <StationsTable></StationsTable>
+                <v-tab-item class="pa-5">
+                    <TrainCarsPanel
+                        :carTemplates="route.carTemplates"
+                        :train="route.train"
+                        @changedCarTemplates="onChangeCarTemplates"
+                        @changedTrain="onChangeTrain"
+                    >
+                    </TrainCarsPanel>
+                </v-tab-item>
+                <v-tab-item class="pa-5">
+                    <RidesPanel
+                        :noOfGeneratedRides="route.noOfGeneratedRides"
+                        :generateRidesFrom="route.generateRidesFrom"
+                        :generateRidesUntil="route.generateRidesUntil"
+                        @changedNoOfGeneratedRides="onChangeNoOfGeneratedRides"
+                        @changedGenerateRidesFrom="onChangeGenerateRidesFrom"
+                        @changedGenerateRidesUntil="onChangeGenerateRidesUntil"
+                    >
+                    </RidesPanel>
                 </v-tab-item>
             </v-tabs>
         </v-card>
@@ -184,16 +201,17 @@
 
 <script>
     import GrayContainer from "../components/GrayContainer";
-    import CONSTANTS from "../constants";
     import RouteServce from "../services/routeService";
-    import StationsTable from "../components/StationsTable";
     import RouteStationsPanel from "../components/RouteStationsPanel";
+    import TrainCarsPanel from "../components/TrainCarsPanel";
+    import RidesPanel from "../components/RidesPanel";
 
     export default {
         name: "RoutesForm",
         components: {
+            RidesPanel,
+            TrainCarsPanel,
             RouteStationsPanel,
-            StationsTable,
             GrayContainer,
         },
         data() {
@@ -262,6 +280,10 @@
 
                 // Route Stations
                 this.route.routeStations = this.oldDbRoute.routeStations;
+
+                // Train & Car Templates
+                this.route.carTemplates = this.oldDbRoute.carTemplates;
+                this.route.train = this.oldDbRoute.train;
             }
         },
         watch: {
@@ -277,7 +299,7 @@
                     return null;
                 }
 
-                const depDate = new Date();
+                const depDate = new Date(2000, 0, 1);
                 const hours = this.depTimeText.substr(0, 2);
                 const minutes = this.depTimeText.substr(3, 2);
                 depDate.setHours(hours);
@@ -291,13 +313,25 @@
                     return null;
                 }
 
-                const arrDate = new Date();
+                const arrDate = new Date(2000, 0, 1);
                 const hours = this.arrTimeText.substr(0, 2);
                 const minutes = this.arrTimeText.substr(3, 2);
                 arrDate.setHours(hours);
                 arrDate.setMinutes(minutes);
 
+                arrDate.setDate(arrDate.getDate() + this.arrivalDay - 1);
+
                 return arrDate.getTime();
+            },
+
+            trainFormValid() {
+
+                return !!this.route.train &&
+                    !!this.route.train.number &&
+                    this.route.train.number > 0 &&
+                    !!this.route.train.trainCategory &&
+                    !!this.route.train.trainCategory._id &&
+                    !!this.route.train.trainCategory.code;
             }
 
         },
@@ -306,34 +340,79 @@
             async saveRoute() {
 
                 try {
+                    console.log('Hellllllllo!1');
                     if (!this.$refs.timeDetailsForm.validate()) {
                         this.timeDetailsFormValid = false;
                         return;
                     }
+                    console.log('Hellllllllo!2');
 
                     this.route.departureTime = this.departureDateTime;
                     this.route.arrivalTime = this.arrivalDateTime;
                     this.route.activeWeekDays.sort( (a, b) => a.value - b.value );
+                    console.log('Hellllllllo!3');
 
+                    // TODO: use a validation function where all goes there using just this.route
+                    //       OR use computed properties like trainFormValid
                     if (this.route.routeStations.length < 2) {
-                        // Need to have at least two route stations!
+                        this.$emit('serverError', 'This route needs at least 2 stations!');
                         return;
                     }
+                    console.log('Hellllllllo!4');
 
-                    // if (this.editingCarLayout) {
-                    //     await this.service.update(routeToSave);
-                    //     await this.$store.dispatch('showNotification', {
-                    //         msg: 'Car Layout has been successfully saved.'
-                    //     });
-                    // } else {
-                    //     await this.service.create(routeToSave);
-                    //     await this.$store.dispatch('showNotification', {
-                    //         msg: 'New Car Layout has been successfully created.'
-                    //     });
-                    // }
+                    this.route.routeStations.forEach( routeStation => {
+                        routeStation.stationId = routeStation.station._id;
+                    });
+                    console.log('Hellllllllo!5');
+
+                    if (!this.trainFormValid) {
+                        this.$emit('serverError', 'Train details not valid!');
+                        return;
+                    }
+                    console.log('Hellllllllo!6');
+
+                    this.route.train.trainCategoryId = this.route.train.trainCategory._id;
+
+                    this.route.carTemplates.forEach( carTemplate => {
+                        carTemplate.departureStationId = carTemplate.departureStation.station._id;
+                        carTemplate.arrivalStationId = carTemplate.arrivalStation.station._id;
+                        carTemplate.travelClassId = carTemplate.travelClass._id;
+                        carTemplate.carLayoutId = carTemplate.carLayout._id;
+                    });
+                    console.log('Hellllllllo!7');
+
+                    if (this.route.generateRidesUntil) {
+
+                        this.route.generateRidesUntil = new Date(this.route.generateRidesUntil);
+                        this.route.generateRidesUntil.setHours(23);
+                        this.route.generateRidesUntil.setMinutes(59);
+                        this.route.generateRidesUntil.setSeconds(59);
+                        this.route.generateRidesUntil.setMilliseconds(999);
+                        this.route.generateRidesUntil = this.route.generateRidesUntil.getTime();
+                    }
+                    console.log('Hellllllllo!8');
+
+                    if (this.editingCarLayout) {
+                        await this.service.update(this.route);
+                        await this.$store.dispatch('showNotification', {
+                            msg: 'Route has been successfully saved.'
+                        });
+                    } else {
+                        await this.service.create(this.route);
+                        console.log('Hellllllllo!9');
+
+                        await this.$store.dispatch('showNotification', {
+                            msg: 'New Route has been successfully created.'
+                        });
+                        console.log('Hellllllllo!10');
+
+                    }
 
                     await this.$router.push({ name: 'routes' });
                 } catch (error) {
+                    console.log('ERROR: ');
+                    console.log(error);
+
                     this.$emit('serverError', error.response.data.err.message);
                 }
             },
@@ -341,7 +420,32 @@
             onChangeRouteStations(routeStations) {
 
                 this.route.routeStations = routeStations;
-            }
+            },
+
+            onChangeCarTemplates(carTemplates) {
+
+                this.route.carTemplates = carTemplates;
+            },
+
+            onChangeTrain(train) {
+
+                this.route.train = train;
+            },
+
+            onChangeNoOfGeneratedRides(no) {
+
+                this.route.noOfGeneratedRides = no;
+            },
+
+            onChangeGenerateRidesFrom(startDate) {
+
+                this.route.generateRidesFrom = startDate ? (new Date(startDate)).getTime() : null;
+            },
+
+            onChangeGenerateRidesUntil(endDate) {
+
+                this.route.generateRidesUntil = endDate ? (new Date(endDate)).getTime() : null;
+            },
         }
     }
 </script>

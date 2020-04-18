@@ -9,6 +9,13 @@ export default {
             .catch(this.throwServerError);
     },
 
+    async create(entity) {
+        return axios
+            .post(CONSTANTS.SERVER_URL + '/route/', entity)
+            .then(response => response.data)
+            .catch(this.throwServerError);
+    },
+
     attachFrontendFields2MongoFormat(route) {
 
         let activeDays = '';

@@ -24,7 +24,7 @@
                                 clearable
                             ></v-text-field>
                             <v-spacer></v-spacer>
-                            <v-dialog v-model="formDialog" max-width="500px">
+                            <v-dialog v-model="formDialog" max-width="500px" persistent>
                                 <template v-slot:activator="{ on }">
                                     <v-icon color="primary" v-on="on" >mdi-plus-circle</v-icon>
                                 </template>
@@ -80,7 +80,7 @@
                 v-show="withChangeOrder"
                 small
                 class="mr-1"
-                color="accent"
+                :color="changeOrderColor"
                 @click="moveUpItem(item)"
             >
                 mdi-menu-up-outline
@@ -89,10 +89,19 @@
                 v-show="withChangeOrder"
                 small
                 class="mr-2"
-                color="accent"
+                :color="changeOrderColor"
                 @click="moveDownItem(item)"
             >
                 mdi-menu-down-outline
+            </v-icon>
+            <v-icon
+                v-show="withShowItem"
+                small
+                class="mr-2"
+                color="accent"
+                @click="showItem(item)"
+            >
+                mdi-eye
             </v-icon>
             <v-icon
                 small
@@ -140,7 +149,15 @@
                 type: Boolean,
                 default: false
             },
+            changeOrderColor: {
+                type: String,
+                default: 'accent'
+            },
             disableSort: {
+                type: Boolean,
+                default: false
+            },
+            withShowItem: {
                 type: Boolean,
                 default: false
             }
@@ -202,7 +219,8 @@
             editItem(item) {
                 this.editedItem = JSON.parse(JSON.stringify(item));
                 this.editingItem = true;
-                this.formDialog = true
+                this.formDialog = true;
+                this.$emit('clickedEditItem', item);
             },
 
             async deleteItem(item) {
@@ -224,6 +242,7 @@
                     this.editedItem = JSON.parse(JSON.stringify(this.defaultItem));
                     this.editingItem = false;
                 }, 300);
+                this.$emit('closedForm');
             },
 
             async save() {
@@ -282,6 +301,11 @@
                 this.items = this.service.moveDown(index);
 
                 this.$emit('movedDownItem', index);
+            },
+
+            showItem(item) {
+
+                this.$emit('showItem', item);
             }
         }
     }

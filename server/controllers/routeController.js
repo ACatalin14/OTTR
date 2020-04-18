@@ -108,7 +108,8 @@ module.exports = {
                 trainCategory: req.body.train.trainCategoryId
             }
         };
-
+        console.log("req.body:");
+        console.log(req.body);
         await Route
             .create(route)
             .then( (createdRoute) => {
@@ -120,17 +121,23 @@ module.exports = {
 
         try {
             route = await routeStationController.createManyForRoute(req, res, route, req.body.routeStations);
+            console.log('Am Facut route stations!');
             route = await routeCarTemplateController.createManyForRoute(req, res, route, req.body.carTemplates);
+            console.log('Am Facut car templates!');
 
             if (req.body.noOfGeneratedRides || req.body.generateRidesFrom || req.body.generateRidesUntil) {
 
                 route = await routeRideController.createManyForRoute(req, res, route);
+                console.log('Am Facut rides!');
+
             }
 
         } catch (e) {
             // response is already set inside called methods
             return;
         }
+
+        console.log('I\'M DONE');
 
         return res.status(200).json(route);
     },

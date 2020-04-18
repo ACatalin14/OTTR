@@ -23,7 +23,8 @@ module.exports = {
                 distance: station.distance,
                 departureTime: station.departureTime,
                 arrivalTime: station.arrivalTime,
-                halt: !station.departureTime || !station.arrivalTime ? 0 : station.departureTime - station.arrivalTime,
+                halt: station.isSource || station.isDestination ? 0 :
+                    new Date(station.departureTime) - new Date(station.arrivalTime),
                 route: route._id,
                 station: station.stationId
             });
@@ -38,6 +39,7 @@ module.exports = {
                 routeStationIds.push(routeStation._id);
             }
         } catch (err) {
+            console.error(err);
             res.status(400).json({err: CONSTANTS.ERRORS.ROUTE_STATION_CREATE_FAILED});
             throw err;
         }

@@ -65,8 +65,18 @@
                             </v-col>
                         </v-row>
                         <v-divider></v-divider>
-                        <v-row>
-                            <v-col cols="12" sm="6" v-if="!editedItem.isSource">
+                        <v-row v-if="!editedItem.isSource">
+                            <v-col cols="5" sm="4">
+                                <v-text-field
+                                    v-model.number="editedItem.arrivalDay"
+                                    value="1"
+                                    label="Arrival Day"
+                                    type="number"
+                                    prepend-icon="mdi-clock-end"
+                                    :rules="validationRules.arrivalDay"
+                                ></v-text-field>
+                            </v-col>
+                            <v-col cols="7" sm="6">
                                 <TimePicker
                                     name="arrTimeRouteStation"
                                     label="Arrival Time"
@@ -76,7 +86,19 @@
                                 >
                                 </TimePicker>
                             </v-col>
-                            <v-col cols="12" sm="6" v-if="!editedItem.isDestination">
+                        </v-row>
+                        <v-row v-if="!editedItem.isDestination">
+                            <v-col cols="5" sm="4">
+                                <v-text-field
+                                    v-model.number="editedItem.departureDay"
+                                    value="1"
+                                    label="Departure Day"
+                                    type="number"
+                                    prepend-icon="mdi-clock-start"
+                                    :rules="validationRules.departureDay"
+                                ></v-text-field>
+                            </v-col>
+                            <v-col cols="7" sm="6">
                                 <TimePicker
                                     name="depTimeRouteStation"
                                     label="Departure Time"
@@ -125,10 +147,12 @@
                         _id: '',
                         name: ''
                     },
-                    distance: '',
+                    distance: 0,
+                    arrivalDay: 1,
+                    departureDay: 1,
                     arrivalTimeText: null,
                     departureTimeText: null,
-                    halt: '',
+                    halt: 0,
                     isSource: false,
                     isDestination: false,
                     stationTypeRadio: 'internal'
@@ -141,6 +165,14 @@
                     'distance': [
                         dist => (!!dist || dist === 0) || 'Distance is required',
                         dist => dist >= 0 || 'Distance must be 0 or greater than 0',
+                    ],
+                    'arrivalDay': [
+                        day => !!day || 'Arrival day is required',
+                        day => day > 0 || 'Arrival day must be greater than 0'
+                    ],
+                    'departureDay': [
+                        day => !!day || 'Departure day is required',
+                        day => day > 0 || 'Departure day must be greater than 0'
                     ]
                 }
             }

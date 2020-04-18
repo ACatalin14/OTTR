@@ -1,7 +1,6 @@
 const dateFormat = require('dateformat');
 import CrudService from './crudService';
 
-// let this.routeStations = [];
 const StationsService = CrudService.getCrudServiceForResource('station');
 
 export default {
@@ -11,10 +10,43 @@ export default {
         this.routeStations = [...stations];
 
         for (let station of this.routeStations) {
-            station.departureTimeText = dateFormat(station.departureTime, 'HH:MM');
-            station.arrivalTimeText = dateFormat(station.arrivalTime, 'HH:MM');
 
-            if (station.halt !== 0) {
+            station.isSource = false;
+            station.isDestination = false;
+            station._id = station.orderNo;
+
+            if ( new Date(station.departureTime).getTime() === 0) {
+                // destination station
+                station.isSource = false;
+                station.isDestination = true;
+                station.arrivalTimeText = dateFormat(station.arrivalTime, 'HH:MM');
+                station.departureTimeText = 'N/A';
+                station.haltText = 'N/A';
+                station.stationTypeRadio = 'destination';
+                station.arrivalDay = 1 + Math.floor(
+                    (new Date(station.arrivalTime) - new Date(2000, 0, 1)) / (1000 * 3600 * 24)
+                );
+                station.departureDay = 1;
+
+            } else if ( new Date(station.arrivalTime).getTime() === 0) {
+                // source station
+                station.isSource = true;
+                station.isDestination = false;
+                station.arrivalTimeText = 'N/A';
+                station.departureTimeText = dateFormat(station.departureTime, 'HH:MM');
+                station.haltText = 'N/A';
+                station.stationTypeRadio = 'source';
+                station.arrivalDay = 1;
+                station.departureDay = 1 + Math.floor(
+                    (new Date(station.departureTime) - new Date(2000, 0, 1)) / (1000 * 3600 * 24)
+                );
+
+            } else {
+                // internal station
+                station.isSource = false;
+                station.isDestination = false;
+                station.arrivalTimeText = dateFormat(station.arrivalTime, 'HH:MM');
+                station.departureTimeText = dateFormat(station.departureTime, 'HH:MM');
 
                 const hours = Number.parseInt(station.halt / 1000 / 60 / 60);
                 const minutes = Number.parseInt(station.halt / 1000 / 60);
@@ -27,26 +59,14 @@ export default {
                 station.haltText = (hours < 10 ? '0' : '') + hours.toString() + ':' +
                     (minutes % 60 < 10 ? '0' : '') + (minutes % 60).toString();
 
-            } else {
-                station.haltText = 'N/A';
+                station.stationTypeRadio = 'internal';
+                station.arrivalDay = 1 + Math.floor(
+                    (new Date(station.arrivalTime) - new Date(2000, 0, 1)) / (1000 * 3600 * 24)
+                );
+                station.departureDay = 1 + Math.floor(
+                    (new Date(station.departureTime) - new Date(2000, 0, 1)) / (1000 * 3600 * 24)
+                );
             }
-
-            station.isSource = false;
-            station.isDestination = false;
-
-            if ( new Date(station.departureTime).getTime() === 0) {
-                station.isDestination = true;
-                station.departureTimeText = 'N/A'
-            }
-
-            if ( new Date(station.arrivalTime).getTime() === 0) {
-                station.isSource = true;
-                station.arrivalTimeText = 'N/A'
-            }
-
-            station.stationTypeRadio = station.isSource ? 'source' :
-                station.isDestination ? 'destination' :
-                'internal';
         }
     },
 
@@ -63,6 +83,7 @@ export default {
         let entity = JSON.parse(JSON.stringify(entityToCreate));
 
         entity.orderNo = this.routeStations.length + 1;
+        entity._id = entity.orderNo;
 
         this.setStationTimestampsBasedOnTimeTexts(entity);
 
@@ -79,7 +100,6 @@ export default {
         let entity = JSON.parse(JSON.stringify(entityToUpdate));
 
         this.setStationTimestampsBasedOnTimeTexts(entity);
-        console.log(entity);
 
         const stations = await StationsService.index();
         const station = stations.find( station => station._id === entity.station._id );
@@ -99,6 +119,7 @@ export default {
 
             for (let i = index; i < this.routeStations.length; i++) {
                 this.routeStations[i].orderNo--;
+                this.routeStations[i]._id--;
             }
         }
     },
@@ -110,7 +131,9 @@ export default {
         this.routeStations.splice(originalPosition - 1, 0, item);
 
         this.routeStations[originalPosition - 1].orderNo--;
+        this.routeStations[originalPosition - 1]._id--;
         this.routeStations[originalPosition].orderNo++;
+        this.routeStations[originalPosition]._id++;
 
         return this.routeStations;
     },
@@ -122,45 +145,54 @@ export default {
         this.routeStations.splice(originalPosition + 1, 0, item);
 
         this.routeStations[originalPosition].orderNo--;
+        this.routeStations[originalPosition]._id--;
         this.routeStations[originalPosition + 1].orderNo++;
+        this.routeStations[originalPosition + 1]._id++;
 
         return this.routeStations;
     },
 
     setStationTimestampsBasedOnTimeTexts(entity) {
 
-        let depTimeArr = [], depTime = 0, arrTimeArr = [], arrTime = 0;
+        if (entity.isSource) {
 
-        entity.arrivalTimeText = entity.isSource ? 'N/A' : entity.arrivalTimeText;
-        entity.departureTimeText = entity.isDestination ? 'N/A' : entity.departureTimeText;
-
-        if (!entity.isSource) {
-            arrTimeArr = entity.arrivalTimeText.split(':').map(str => parseInt(str));
-            arrTime = new Date(2000, 1, 1, arrTimeArr[0], arrTimeArr[1]);
-        }
-
-        if (!entity.isDestination) {
-            depTimeArr = entity.departureTimeText.split(':').map(str => parseInt(str));
-            depTime = new Date(2000, 1, 1, depTimeArr[0], depTimeArr[1]);
-        }
-
-        if (entity.isSource || entity.isDestination) {
+            entity.arrivalTime = new Date(0);
+            entity.departureTime = this.getStandardDateFromDayTime(entity.departureDay, entity.departureTimeText);
             entity.haltText = 'N/A';
-        } else {
-            // TODO: should keep track of different days (train goes from A at day 1 and arrives at B at day 3)
-            if (depTime < arrTime) {
-                depTime.setDate(depTime.getDate() + 1);
-            }
+            entity.arrivalTimeText = 'N/A';
 
-            const halt = depTime - arrTime;
-            const hours = Number.parseInt(halt / 1000 / 60 / 60);
-            const minutes = Number.parseInt(halt / 1000 / 60);
+        } else if (entity.isDestination) {
+
+            entity.arrivalTime = this.getStandardDateFromDayTime(entity.arrivalDay, entity.arrivalTimeText);
+            entity.departureTime = new Date(0);
+            entity.haltText = 'N/A';
+            entity.departureTimeText = 'N/A';
+        } else {
+
+            entity.arrivalTime = this.getStandardDateFromDayTime(entity.arrivalDay, entity.arrivalTimeText);
+            entity.departureTime = this.getStandardDateFromDayTime(entity.departureDay, entity.departureTimeText);
+
+            entity.halt = entity.departureTime - entity.arrivalTime;
+            const hours = Math.floor(entity.halt / (1000 * 3600));
+            const minutes = Math.floor(entity.halt / (1000 * 60));
 
             entity.haltText = (hours < 10 ? '0' : '') + hours.toString() + ':' +
                 (minutes % 60 < 10 ? '0' : '') + (minutes % 60).toString();
         }
+    },
 
-        entity.arrivalTime = arrTime === 0 ? 0 : arrTime.getTime();
-        entity.departureTime = depTime === 0 ? 0 : depTime.getTime();
+    getStandardDateFromDayTime(day, timeText) {
+
+        let stdDate = new Date(2000, 0, 1);
+
+        stdDate.setHours(
+            parseInt(timeText.substr(0, 2))
+        );
+        stdDate.setMinutes(
+            parseInt(timeText.substr(3, 2))
+        );
+        stdDate.setDate(day);
+
+        return stdDate;
     }
 }
