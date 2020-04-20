@@ -1,7 +1,63 @@
 const Route = require("../models/route");
 const rideCarController = require("./rideCarController");
+const dateFormat = require('dateformat');
 
 module.exports = {
+    getRidesForRoute: async (req, res) => {
+
+        const route = await module.exports.getRouteByName(req.params.name);
+
+        if (route) {
+            return res.status(200).json(route.rides);
+        }
+
+        return res.status(400).json({err: CONSTANTS.ERRORS.ROUTE_NOT_FOUND});
+    },
+
+    getRouteByName: async (name) => {
+
+        const routes = await Route.find({deleted: {$ne: true}})
+            .populate('train.trainCategory')
+            .populate({
+                path: 'routeStations carTemplates.departureStation carTemplates.arrivalStation carTemplates.travelClass carTemplates.carLayout',
+                populate: {
+                    path: 'station'
+                }
+            })
+            .populate({
+                path: 'rides.cars',
+                populate: {
+                    path: 'departureStation arrivalStation travelClass carLayout',
+                    populate: {
+                        path: 'station'
+                    }
+                }
+            })
+            .exec();
+
+        const nameTokens = name.split(/[\(\)\-]/);
+        const sourceCode = nameTokens[0];
+        const departureTime = nameTokens[1];
+        const destinationCode = nameTokens[3];
+        const arrivalTime = nameTokens[4];
+
+        for (let route of routes) {
+            const stationsCount = route.routeStations.length;
+            const departureDateTime = new Date(route.departureTime);
+            const arrivalDateTime = new Date(route.arrivalTime);
+
+            if (route.routeStations[0].station.code === sourceCode &&
+                route.routeStations[stationsCount - 1].station.code === destinationCode &&
+                dateFormat(departureDateTime, 'HH:MM') === departureTime &&
+                dateFormat(arrivalDateTime, 'HH:MM') === arrivalTime
+            ) {
+                return JSON.parse(JSON.stringify(route));
+            }
+        }
+
+        return null;
+    },
+
     createManyForRoute: async (req, res, route) => {
 
         const noOfRides = req.body.noOfGeneratedRides;
@@ -10,12 +66,16 @@ module.exports = {
         const activeWeekDays = req.body.activeWeekDays;
         const departureTime = route.departureTime;
         const arrivalTime = route.arrivalTime;
+        let oldCount = 0;
 
-        route.rides = [];
-        console.log('Sa Calculam urm rides');
+        if (!route.rides || route.rides.length === 0) {
+            route.rides = [];
+        } else {
+            oldCount = route.rides.length;
+        }
+
         // calculate available dates based on active week days (adding to today)
         let rideDates = module.exports.calculateNextRideDates(activeWeekDays, departureTime, arrivalTime, noOfRides, ridesDateFrom, ridesUntilDate);
-        console.log('Am calculat urm rides');
 
         for (let rideDate of rideDates) {
             route.rides.push({
@@ -27,21 +87,17 @@ module.exports = {
 
         let updatedRoute = await Route.findByIdAndUpdate(route._id, route, {new: true});
         updatedRoute = updatedRoute['_doc'];
-        console.log('Am updatat urm rides');
 
-        for (let i = 0; i < updatedRoute.rides.length; i++) {
-            console.log('Sa cream car templates pr rides');
+        for (let i = oldCount; i < updatedRoute.rides.length; i++) {
 
             const cars = await rideCarController.createCarsForRideWithTemplate(req, res, updatedRoute.rides[i], route.carTemplates);
             cars.forEach( car => {
                 updatedRoute.rides[i].cars.push(car._id);
             });
         }
-        console.log('Sa gasim updated...');
 
         updatedRoute = await Route.findByIdAndUpdate(updatedRoute._id, updatedRoute, {new: true});
         updatedRoute = updatedRoute['_doc'];
-        console.log('Sa gasim updated...');
 
         return JSON.parse(JSON.stringify(updatedRoute));
     },
@@ -72,21 +128,28 @@ module.exports = {
             ridesDateFrom = Date.now();
         }
         ridesDateFrom = new Date(ridesDateFrom);
+        ridesDateFrom.setHours(0, 0, 0, 0);
 
         if (!ridesUntilDate) {
             ridesUntilDate = new Date('1.1.9999');
         }
         ridesUntilDate = new Date(ridesUntilDate);
         ridesUntilDate.setHours(23, 59, 59, 999);
-        console.log('------------Current?1122 CEVAAAA:');
 
         departureTime = new Date(departureTime);
         arrivalTime = new Date(arrivalTime);
 
+        // departureTime.setFullYear( new Date().getFullYear() );
+        // departureTime.setMonth( new Date().getMonth() );
+        // departureTime.setDate( new Date().getDate() );
+        // arrivalTime.setFullYear( new Date().getFullYear() );
+        // arrivalTime.setMonth( new Date().getMonth() );
+        // arrivalTime.setDate( new Date().getDate() );
+
+
         // check if today should be included in ride dates
         let todayDepDateTime = new Date();
         todayDepDateTime.setHours(departureTime.getHours(), departureTime.getMinutes(), 0, 0);
-        console.log('------------Current?22:');
 
         if (ridesDateFrom.getDate() === todayDepDateTime.getDate() &&
             ridesDateFrom.getMonth() === todayDepDateTime.getMonth() &&
@@ -111,16 +174,9 @@ module.exports = {
         // search for next ride dates
         let currentDepDate = new Date(ridesDateFrom);
         currentDepDate.setHours(departureTime.getHours(), departureTime.getMinutes(), 0, 0);
-        console.log('------------Current?:');
 
         while (currentDepDate < ridesUntilDate && noOfRides > 0) {
-            console.log('------------Current:');
-            console.log(currentDepDate);
-            console.log(ridesUntilDate);
-            console.log(noOfRides);
-            console.log(activeWeekDays);
-            console.log(arrivalTime);
-            console.log(departureTime);
+
             if (activeWeekDays.includes( currentDepDate.getDay() )) {
 
                 const dayDiff = arrivalTime.getDate() - departureTime.getDate();
@@ -140,5 +196,57 @@ module.exports = {
         }
 
         return rideDates;
+    },
+
+    /**
+     * Request example:
+     * params: routeId = "5e9ruoigwhie"
+     * {
+     *
+     *      noOfGeneratedRides: 0,
+     *      generateRidesFrom: 1421894721,
+     *      generateRidesUntil: 1541798121
+     * }
+     *
+     * @param req
+     * @param res
+     * @returns {Promise<*>}
+     */
+    createRides: async (req, res) => {
+
+        if (!req.params.id || req.body.noOfGeneratedRides === undefined || req.body.generateRidesFrom === undefined ||
+            req.body.generateRidesUntil === undefined
+        ) {
+            return res.status(400).json({err: CONSTANTS.ERRORS.BAD_REQUEST_ROUTE_UPDATE});
+        }
+
+
+        const route = await Route.findById(req.params.id);
+
+        req.body.activeWeekDays = route.activeWeekDays;
+
+        const updatedRoute = await module.exports.createManyForRoute(req, res, route);
+
+        return res.status(200).json(updatedRoute)
+    },
+
+    deleteRide: async (req, res) => {
+
+        const route = await module.exports.getRouteByName(req.params.name);
+
+        if (!route) {
+            return res.status(400).json({err: CONSTANTS.ERRORS.ROUTE_NOT_FOUND});
+        }
+
+        // delete the ride from array
+        const updatedRoute = await Route.findByIdAndUpdate(route._id, {
+            $pull: {
+                rides: {
+                    _id: req.params.id
+                }
+            }
+        }, {new: true});
+
+        return res.status(200).json(updatedRoute);
     }
 };

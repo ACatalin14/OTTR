@@ -9,5 +9,6 @@ router.use('/traveler-category', require('./travelerCategory'));
 router.use('/student', require('./student'));
 router.use('/car-layout', require('./carLayout'));
 router.use('/route', require('./route'));
+router.use('/ride', require('./ride'));
 
 module.exports = router;

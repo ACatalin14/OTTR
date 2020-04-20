@@ -2,9 +2,16 @@ import axios from 'axios';
 import CONSTANTS from "../constants";
 
 export default {
-    index() {
+    async index() {
         return axios
             .get(CONSTANTS.SERVER_URL + '/route/')
+            .then(response => response.data)
+            .catch(this.throwServerError);
+    },
+
+    async getByName(name) {
+        return axios
+            .get(CONSTANTS.SERVER_URL + '/route/name/' + name)
             .then(response => response.data)
             .catch(this.throwServerError);
     },
@@ -12,6 +19,20 @@ export default {
     async create(entity) {
         return axios
             .post(CONSTANTS.SERVER_URL + '/route/', entity)
+            .then(response => response.data)
+            .catch(this.throwServerError);
+    },
+
+    async update(entity) {
+        return axios
+            .put(CONSTANTS.SERVER_URL + '/route/' + entity._id, entity)
+            .then(response => response.data)
+            .catch(this.throwServerError);
+    },
+
+    async delete(entityId) {
+        return axios
+            .delete(CONSTANTS.SERVER_URL + '/route/' + entityId)
             .then(response => response.data)
             .catch(this.throwServerError);
     },
@@ -34,8 +55,8 @@ export default {
         activeDays = activeDays.slice(0, -1);
 
         route.frontend = {
-            name: routeStations[0].station.name + ' (' + dateFormat(depTime, 'HH:MM') + ') - ' +
-                routeStations[n].station.name + ' (' + dateFormat(arrTime, 'HH:MM') + ')',
+            name: routeStations[0].station.code + '(' + dateFormat(depTime, 'HH:MM') + ')-' +
+                routeStations[n].station.code + '(' + dateFormat(arrTime, 'HH:MM') + ')',
             depStation: routeStations[0].station.name,
             arrStation: routeStations[n].station.name,
             depTime: dateFormat(depTime, 'HH:MM'),

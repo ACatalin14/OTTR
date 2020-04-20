@@ -18,6 +18,10 @@ const routeSchema = mongoose.Schema({
         type: Array,
         required: true
     },
+    deleted: {
+        type: Boolean,
+        required: false
+    },
 
     train: trainSchema,
 

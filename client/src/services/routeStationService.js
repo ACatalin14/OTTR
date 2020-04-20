@@ -13,6 +13,7 @@ export default {
 
             station.isSource = false;
             station.isDestination = false;
+            station.mongoId = station._id;
             station._id = station.orderNo;
 
             if ( new Date(station.departureTime).getTime() === 0) {

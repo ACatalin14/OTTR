@@ -129,7 +129,8 @@
         components: {CarLayoutDialog, CrudTable},
         props: {
             carTemplates: Array,
-            train: Object
+            train: Object,
+            routeStations: Array
         },
 
         data() {
@@ -153,6 +154,7 @@
                 },
                 defaultCarTemplate: {
                     _id: '',
+                    mongoId: '',
                     orderNo: '',
                     number: '',
                     departureStation: {
@@ -213,17 +215,17 @@
                 this.currentTrain = JSON.parse(JSON.stringify(this.train));
             }
 
-            const stations = await this.stationsService.index();
+            const stations = JSON.parse(JSON.stringify(this.routeStations));
 
             stations.sort((a, b) => {
-                const A = a.name.toUpperCase(), B = b.name.toUpperCase();
+                const A = a.station.name.toUpperCase(), B = b.station.name.toUpperCase();
                 return A < B ? -1 : (A > B ? 1 : 0);
             });
 
             stations.forEach( (station) => {
                 this.stationsSelectItems.push({
-                    value: station._id,
-                    text: station.name
+                    value: station.station._id,
+                    text: station.station.name
                 });
             });
 
@@ -265,6 +267,26 @@
                 deep: true,
                 handler() {
                     this.$emit('changedTrain', this.currentTrain);
+                }
+            },
+
+            routeStations: {
+                deep: true,
+                handler() {
+                    const stations = JSON.parse(JSON.stringify(this.routeStations));
+                    this.stationsSelectItems = [];
+
+                    stations.sort((a, b) => {
+                        const A = a.station.name.toUpperCase(), B = b.station.name.toUpperCase();
+                        return A < B ? -1 : (A > B ? 1 : 0);
+                    });
+
+                    stations.forEach( (station) => {
+                        this.stationsSelectItems.push({
+                            value: station.station._id,
+                            text: station.station.name
+                        });
+                    });
                 }
             }
         },

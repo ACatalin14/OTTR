@@ -35,6 +35,8 @@ module.exports = {
         try {
             const createdRouteStations = await RouteStation.create(routeStations);
 
+            createdRouteStations.sort((a, b) => a.orderNo - b.orderNo);
+
             for (let routeStation of createdRouteStations) {
                 routeStationIds.push(routeStation._id);
             }
@@ -55,6 +57,7 @@ module.exports = {
 
             route = JSON.parse(JSON.stringify(updatedRoute['_doc']));
         } catch (err) {
+            console.error(err);
             res.status(500).json({ err: CONSTANTS.ERRORS.DB_OBJECT_UPDATE_FAILED });
             throw err;
         }
@@ -77,5 +80,14 @@ module.exports = {
         }
 
         return route;
+    },
+
+    updateManyForRoute: async (req, res, route, stations) => {
+
+        await RouteStation.deleteMany({
+            route: route._id
+        });
+
+        return await module.exports.createManyForRoute(req, res, route, stations);
     }
 };

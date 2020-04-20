@@ -11,6 +11,7 @@ export default {
 
         for (let carTemplate of this.carTemplates) {
 
+            carTemplate.mongoId = carTemplate._id;
             carTemplate._id = carTemplate.orderNo;
         }
     },

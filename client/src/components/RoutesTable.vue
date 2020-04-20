@@ -67,6 +67,14 @@
             <v-icon
                 small
                 class="mr-2"
+                color="accent"
+                @click="goToRides(item)"
+            >
+                mdi-calendar-clock
+            </v-icon>
+            <v-icon
+                small
+                class="mr-2"
                 color="primary"
                 @click="goEditRoute(item)"
             >
@@ -138,14 +146,16 @@
 
                 try {
                     await this.service.delete(item._id);
-                    this.items = await this.service.index();
+                    this.items = [];
+                    const dbItems = await this.service.index();
+                    dbItems.forEach( item => {
+                        this.items.push(
+                            RouteService.attachFrontendFields2MongoFormat(item)
+                        )
+                    });
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
-            },
-
-            showRoute(carLayout) {
-                this.$emit('showCarLayout', carLayout);
             },
 
             async goCreateNewRoute() {
@@ -162,7 +172,17 @@
                         route: route
                     }
                 });
+            },
 
+            async goToRides(route) {
+
+                await this.$router.push({
+                    name: 'rides',
+                    params: {
+                        routeName: route.frontend.name,
+                        route: route
+                    }
+                });
             }
         }
     }

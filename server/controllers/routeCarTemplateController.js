@@ -1,4 +1,3 @@
-const CONSTANTS = require('../constants');
 const RouteStation = require("../models/routeStation");
 const Route = require("../models/route");
 
@@ -32,5 +31,14 @@ module.exports = {
         const updatedRoute = await Route.findByIdAndUpdate(route._id, route, {new: true});
 
         return JSON.parse(JSON.stringify(updatedRoute['_doc']));
+    },
+
+    updateManyForRoute: async (req, res, route, reqCarTemplates) => {
+
+        await Route.updateOne({_id: route._id}, {
+            carTemplates: []
+        });
+
+        return await module.exports.createManyForRoute(req, res, route, reqCarTemplates);
     }
 };

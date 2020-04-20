@@ -50,8 +50,7 @@
                                 :src="require('@/assets/ottr-logo-blue.png')"
                                 class=""
                                 alt="Online Train Ticket Reservation"
-                                contain
-                                max-height="94%"
+                                max-height="74"
                                 max-width="208"
                                 transition="scale-transition"
                             />
@@ -185,7 +184,7 @@
                 </template>
             </v-list>
         </v-navigation-drawer>
-        <v-content app>
+        <v-content app id="content">
             <router-view @serverError="onServerError"></router-view>
         </v-content>
         <v-footer app style="position: absolute" inset color="#E9E9E9" class="flex-column">
@@ -339,8 +338,12 @@
 <style>
     #ottr-app {
         background-color: #E9E9E9;
+        min-height: 100vh;
     }
     a {
         text-decoration: none
     }
+    /*#content {*/
+    /*    min-height: calc(100% - 74px);*/
+    /*}*/
 </style>

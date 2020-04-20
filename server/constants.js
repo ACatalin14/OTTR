@@ -82,11 +82,19 @@ const CONSTANTS = {
         },
         BAD_REQUEST_ROUTE_CREATION: {
             code: 1015,
-            message: 'Your request is missing critical fields'
+            message: 'Your request is missing critical fields in order to create a new route'
         },
         ROUTE_STATION_CREATE_FAILED: {
             code: 1015,
             message: 'Route Station object could not be created'
+        },
+        BAD_REQUEST_ROUTE_UPDATE: {
+            code: 1015,
+            message: 'Your request is missing critical fields in order to update a route'
+        },
+        ROUTE_NOT_FOUND: {
+            code: 1016,
+            message: 'The requested route has not been found'
         }
     }
 };

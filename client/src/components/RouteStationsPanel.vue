@@ -126,7 +126,10 @@
         name: "RouteStationsPanel",
         components: {TimePicker, CrudTable},
         props: {
-            items: Array
+            items: Array,
+            routeDepartureTime: String,
+            routeArrivalDay: Number,
+            routeArrivalTime: String
         },
         data() {
             return {
@@ -142,6 +145,7 @@
                 ],
                 defaultItem: {
                     _id: '',
+                    mongoId: '',
                     orderNo: '',
                     station: {
                         _id: '',
@@ -224,6 +228,7 @@
                         editedItem.isDestination = false;
                         editedItem.distance = 0;
                         editedItem.arrivalTimeText = null;
+                        editedItem.departureTimeText = this.routeDepartureTime;
                         break;
 
                     case 'internal':
@@ -235,6 +240,8 @@
                         editedItem.isSource = false;
                         editedItem.isDestination = true;
                         editedItem.departureTimeText = null;
+                        editedItem.arrivalTimeText = this.routeArrivalTime;
+                        editedItem.arrivalDay = this.routeArrivalDay;
                         break;
                 }
             }
