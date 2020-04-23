@@ -25,6 +25,9 @@
                         <li>https://www.wallpaperflare.com/train-ticket-fare-united-kingdom-number-western-script-wallpaper-gsual</li>
                         <li>https://www.wallpaperflare.com/machine-postal-office-ticket-elevator-db-deutsche-bahn-wallpaper-eoxjh</li>
                         <li>https://www.wallpaperflare.com/people-near-train-station-group-of-people-on-train-station-king-s-cross-station-wallpaper-wjspp/download/1920x1080</li>
+                        <li>https://www.uihere.com/free-photos/woman-standing-on-train-door-326609</li>
+                        <li>https://www.uihere.com/free-photos/two-persons-hugging-each-other-on-train-station-platform-538891</li>
+                        <li>https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.dreamstime.com%2Fphotos-images%2Fbusiness-travel.html&psig=AOvVaw1Ww7KUyezCZhar0E4KQ2Zd&ust=1587760753406000&source=images&cd=vfe&ved=0CA0QjhxqFwoTCJjNrvCz_-gCFQAAAAAdAAAAABAO</li>
                     </ul>
                 </v-row>
             </v-col>

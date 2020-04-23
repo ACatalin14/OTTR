@@ -26,15 +26,15 @@
                         <h1 class="primary--text carousel-heading">Book Your Ride</h1>
                         <p class="title primary--text font-italic font-weight-bold text--lighten-1">
                             Safe, Secure, Fast.
-                            <br>There is no easier way to book your train ride other than using OTTR.
+                            <br>There is no easier way to book your train ride other than OTTR.
                         </p>
                     </v-col>
                 </v-row>
             </v-carousel-item>
         </v-carousel>
         <v-row class="px-5 mt-10 mb-5">
-            <v-col cols="12" md="5" offset-md="1">
-                <v-card max-width="450" style="border-top: solid 4px indigo" elevation="5">
+            <v-col cols="12" md="6">
+                <v-card max-width="450" style="border-top: solid 4px indigo; margin: auto" elevation="5">
                     <v-form
                         v-model="searchRidesFormValid"
                         ref="searchRidesForm"
@@ -90,9 +90,8 @@
                                 hide-selected
                                 item-text="name"
                                 item-value="_id"
-                                label="Via (Optional)"
-                                hint="Optional"
-                                placeholder="Via Station"
+                                label="Via"
+                                placeholder="Optional"
                                 prepend-icon="mdi-city"
                                 return-object
                             >
@@ -108,6 +107,20 @@
                                 @datePickerChanged="onDatePickerChanged($event)"
                             >
                             </DatePicker>
+                            <v-autocomplete
+                                v-model="selectedTravelClass"
+                                :items="travelClasses"
+                                :search-input.sync="travelClassSearch"
+                                hide-no-data
+                                hide-selected
+                                item-text="name"
+                                item-value="_id"
+                                label="Travel Class"
+                                placeholder="Any"
+                                prepend-icon="mdi-seat-passenger"
+                                return-object
+                            >
+                            </v-autocomplete>
                         </v-card-text>
                         <v-card-actions class="pb-5 px-7">
                             <v-btn
@@ -116,11 +129,15 @@
                                 :disabled="!searchRidesFormValid"
                                 type="submit"
                             >
+                                <v-icon class="mr-2">mdi-magnify</v-icon>
                                 Search
                             </v-btn>
                         </v-card-actions>
                     </v-form>
                 </v-card>
+            </v-col>
+            <v-col cols="12" md="6">
+                <AdvertisementCarousel></AdvertisementCarousel>
             </v-col>
         </v-row>
     </div>
@@ -131,38 +148,48 @@
     // import HelloWorld from '@/components/HelloWorld.vue'
     import CrudService from '../services/crudService';
     import DatePicker from "../components/DatePicker";
+    import AdvertisementCarousel from "../components/AdvertisementCarousel";
 
     export default {
         name: 'home',
         components: {
+            AdvertisementCarousel,
             DatePicker
 
         },
         data() {
             return {
-                stations: [{_id: "5e1234", name: "Braila"}, {_id: "5e1238", name: "Bucuresti"}],
+                stations: [],
+                travelClasses: [],
                 searchRidesFormValid: true,
                 fromStation: null,
                 toStation: null,
                 viaStation: null,
+                selectedTravelClass: null,
                 fromStationSearch: null,
                 toStationSearch: null,
                 viaStationSearch: null,
+                travelClassSearch: null,
                 rideDateString: new Date().toISOString().substr(0, 10),
                 stationService: CrudService.getCrudServiceForResource('station'),
+                travelClassService: CrudService.getCrudServiceForResource('travel-class'),
                 carouselItems: [
                     { path: 'carousel-img-1.png' },
                     { path: 'carousel-img-2.png' },
                     { path: 'carousel-img-3.png' },
                     { path: 'carousel-img-4.png' },
                     { path: 'carousel-img-5.png' },
-
                 ]
             }
         },
-        async   created() {
+        async created() {
 
-            this.stations = await this.stationService.index();
+            try {
+                this.stations = await this.stationService.index();
+                this.travelClasses = await this.travelClassService.index();
+            } catch (error) {
+                this.$emit('serverError', error.response.data.err.message);
+            }
         },
         methods: {
             swapFromToStations() {
@@ -187,7 +214,7 @@
 <style scoped>
     .home {
         height: 100%;
-        background-image: repeating-linear-gradient(35deg, #E9E9E9, #FAFAFA, #E9E9E9 20%);
+        background-image: repeating-linear-gradient(35deg, #E9E9E9, #FFF, #E9E9E9 15%);
     }
     .carousel-item {
         background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(100, 100, 255, 0.8));
