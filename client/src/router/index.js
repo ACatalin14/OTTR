@@ -145,6 +145,12 @@ router.beforeEach((to, from, next) => {
 
     const userRole = Store.getters.getUser.role;
 
+    // if accessing login/register page while logged in, redirect to My Account
+    if (Store.getters.isLoggedIn && ['login', 'register'].includes(to.matched[0].name)) {
+        next({ path: '/my-account' });
+        return;
+    }
+
     // check if there aren't matched routes needing special user rights
     if (to.matched.every(record => !record.meta.requiredAuthGroup)) {
         next();

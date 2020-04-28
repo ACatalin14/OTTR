@@ -15,16 +15,4 @@ router.put('/:id', adminAuthorize, routeController.update);
 router.delete('/:id', adminAuthorize, routeController.delete);
 router.delete('/name/:name/ride/:id', adminAuthorize, routeRideController.deleteRide);
 
-// router.get('/:id/carTemplate', adminAuthorize, routeController.getCarTemplates);
-// router.get('/:id/carTemplate/:carTemplateId', adminAuthorize, routeController.getCarTemplate);
-// router.post('/:id/carTemplate', adminAuthorize, routeController.addCarTemplate);
-// router.put('/:id/carTemplate/:carTemplateId', adminAuthorize, routeController.updateCarTemplate);
-// router.delete('/:id/carTemplate/:carTemplateId', adminAuthorize, routeController.deleteCarTemplate);
-//
-// router.get('/:routeId/ride', adminAuthorize, routeRideController.index);
-// router.get('/:routeId/ride/:rideId', adminAuthorize, routeRideController.show);
-// router.post('/:routeId/ride', adminAuthorize, routeRideController.create);
-// router.put('/:routeId/ride/:rideId', adminAuthorize, routeRideController.update);
-// router.delete('/:routeId/ride/:rideId', adminAuthorize, routeRideController.delete);
-
 module.exports = router;

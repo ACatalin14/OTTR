@@ -95,6 +95,10 @@ const CONSTANTS = {
         ROUTE_NOT_FOUND: {
             code: 1016,
             message: 'The requested route has not been found'
+        },
+        MISSING_IMPORTANT_ARGUMENTS: {
+            code: 1017,
+            message: 'The request is missing important arguments'
         }
     }
 };

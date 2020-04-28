@@ -84,8 +84,25 @@ module.exports = {
 
     updateManyForRoute: async (req, res, route, stations) => {
 
-        await RouteStation.deleteMany({
-            route: route._id
+        const oldRouteStations = await RouteStation
+            .find({ route: route._id });
+
+        oldRouteStations.sort((a, b) => a.orderNo - b.orderNo);
+
+        await Station.updateMany({}, {
+            $pull: {
+                routeStations: {
+                    $in: oldRouteStations
+                }
+            }
+        });
+
+        await Route.findByIdAndUpdate(route._id, {
+            $pull: {
+                routeStations: {
+                    $in: oldRouteStations
+                }
+            }
         });
 
         return await module.exports.createManyForRoute(req, res, route, stations);

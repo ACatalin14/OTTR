@@ -128,7 +128,6 @@ module.exports = {
             ridesDateFrom = Date.now();
         }
         ridesDateFrom = new Date(ridesDateFrom);
-        ridesDateFrom.setHours(0, 0, 0, 0);
 
         if (!ridesUntilDate) {
             ridesUntilDate = new Date('1.1.9999');
