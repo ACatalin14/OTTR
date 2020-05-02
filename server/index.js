@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 
 const config = require('./config');
 const seederService = require('./services/seederService');
+const configController = require('./controllers/configController');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,5 +39,7 @@ app.use('/api', router);
 if (config.shouldSeedData) {
     seederService.seedData()
 }
+
+configController.createIfNotCreated();
 
 app.listen(PORT, () => console.log(`OTTR Server is listening on port ${PORT}.`));

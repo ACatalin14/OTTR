@@ -19,7 +19,8 @@ module.exports = {
         const routes = await Route.find({deleted: {$ne: true}})
             .populate('train.trainCategory')
             .populate({
-                path: 'routeStations carTemplates.departureStation carTemplates.arrivalStation carTemplates.travelClass carTemplates.carLayout',
+                path: 'routeStations rides.routeStations carTemplates.departureStation carTemplates.arrivalStation' +
+                    ' carTemplates.travelClass carTemplates.carLayout',
                 populate: {
                     path: 'station'
                 }
@@ -75,12 +76,18 @@ module.exports = {
         }
 
         // calculate available dates based on active week days (adding to today)
-        let rideDates = module.exports.calculateNextRideDates(activeWeekDays, departureTime, arrivalTime, noOfRides, ridesDateFrom, ridesUntilDate);
+        let rideDates = module.exports.calculateNextRideDates(activeWeekDays, departureTime, arrivalTime, noOfRides, ridesDateFrom, ridesUntilDate, route);
+
+        let rideStations = [];
+        route.routeStations.forEach(routeStation => {
+            rideStations.push(routeStation);
+        });
 
         for (let rideDate of rideDates) {
             route.rides.push({
-                departureDate: rideDate.departureDate,
-                arrivalDate: rideDate.arrivalDate,
+                departureDates: rideDate.departureDates,
+                arrivalDates: rideDate.arrivalDates,
+                routeStations: rideStations,
                 cars: []
             });
         }
@@ -116,8 +123,9 @@ module.exports = {
      * @param noOfRides
      * @param ridesDateFrom
      * @param ridesUntilDate
+     * @param route
      */
-    calculateNextRideDates(activeWeekDays, departureTime, arrivalTime, noOfRides, ridesDateFrom, ridesUntilDate) {
+    calculateNextRideDates(activeWeekDays, departureTime, arrivalTime, noOfRides, ridesDateFrom, ridesUntilDate, route) {
         let rideDates = [];
 
         if (!noOfRides) {
@@ -154,16 +162,18 @@ module.exports = {
             ridesDateFrom.getMonth() === todayDepDateTime.getMonth() &&
             ridesDateFrom.getFullYear() === todayDepDateTime.getFullYear()
         ) {
-            if (ridesDateFrom < todayDepDateTime && activeWeekDays.includes(todayDepDateTime.getDay())) {
+            if (ridesDateFrom < todayDepDateTime && activeWeekDays.includes(todayDepDateTime.getDay() + 1)) {
 
                 const dayDiff = arrivalTime.getDate() - departureTime.getDate();
                 const todayArrDateTime = new Date(todayDepDateTime);
                 todayArrDateTime.setHours(arrivalTime.getHours(), arrivalTime.getMinutes(), 0, 0);
                 todayArrDateTime.setDate(todayDepDateTime.getDate() + dayDiff);
 
+                const departureDates = module.exports.calculateDepartureDateTimesForRide(currentDepDate, route.routeStations);
+                const arrivalDates = module.exports.calculateArrivalDateTimesForRide(currentDepDate, route.routeStations);
                 rideDates.push({
-                    departureDate: todayDepDateTime,
-                    arrivalDate: todayArrDateTime
+                    departureDates: departureDates, //todayDepDateTime,
+                    arrivalDates: arrivalDates // todayArrDateTime
                 });
             }
 
@@ -176,16 +186,19 @@ module.exports = {
 
         while (currentDepDate < ridesUntilDate && noOfRides > 0) {
 
-            if (activeWeekDays.includes( currentDepDate.getDay() )) {
+            if (activeWeekDays.includes( currentDepDate.getDay() + 1 )) {
 
                 const dayDiff = arrivalTime.getDate() - departureTime.getDate();
                 const currentArrDate = new Date(currentDepDate);
                 currentArrDate.setHours(arrivalTime.getHours(), arrivalTime.getMinutes(), 0, 0);
                 currentArrDate.setDate(currentDepDate.getDate() + dayDiff);
 
+                const departureDates = module.exports.calculateDepartureDateTimesForRide(currentDepDate, route.routeStations);
+                const arrivalDates = module.exports.calculateArrivalDateTimesForRide(currentDepDate, route.routeStations);
+
                 rideDates.push({
-                    departureDate: new Date(currentDepDate),
-                    arrivalDate: new Date(currentArrDate)
+                    departureDates: departureDates, //new Date(currentDepDate),
+                    arrivalDates: arrivalDates // new Date(currentArrDate)
                 });
 
                 noOfRides--;
@@ -195,6 +208,72 @@ module.exports = {
         }
 
         return rideDates;
+    },
+
+    /**
+     *
+     * @param depDate
+     * @param routeStations
+     * @returns {[]}
+     */
+    calculateDepartureDateTimesForRide(depDate, routeStations) {
+
+        const departureDate = new Date(depDate);
+        const departureTimes = routeStations.map(routeStation => {
+            return new Date(routeStation.departureTime);
+        });
+
+        let departureDates = [];
+        departureTimes.forEach(depTime => {
+            if (depTime - new Date(0) === 0) {
+                // this is the destination station
+                departureDates.push(new Date(0));
+                return;
+            }
+
+            const dayDiff = depTime.getDate() - 1;
+
+            let departureDateForThisStation = new Date(departureDate);
+            departureDateForThisStation.setDate(departureDate.getDate() + dayDiff);
+            departureDateForThisStation.setHours(depTime.getHours(), depTime.getMinutes(), 0, 0);
+
+            departureDates.push(departureDateForThisStation);
+        });
+
+        return departureDates;
+    },
+
+    /**
+     *
+     * @param depDate
+     * @param routeStations
+     * @returns {[]}
+     */
+    calculateArrivalDateTimesForRide(depDate, routeStations) {
+
+        const departureDate = new Date(depDate);
+        const arrivalTimes = routeStations.map(routeStation => {
+            return new Date(routeStation.arrivalTime);
+        });
+
+        let arrivalDates = [];
+        arrivalTimes.forEach(arrTime => {
+            if (arrTime - new Date(0) === 0) {
+                // this is the source station
+                arrivalDates.push(new Date(0));
+                return;
+            }
+
+            const dayDiff = arrTime.getDate() - 1;
+
+            let arrivalDateForThisStation = new Date(departureDate);
+            arrivalDateForThisStation.setDate(departureDate.getDate() + dayDiff);
+            arrivalDateForThisStation.setHours(arrTime.getHours(), arrTime.getMinutes(), 0, 0);
+
+            arrivalDates.push(arrivalDateForThisStation);
+        });
+
+        return arrivalDates;
     },
 
     /**
@@ -219,8 +298,8 @@ module.exports = {
             return res.status(400).json({err: CONSTANTS.ERRORS.BAD_REQUEST_ROUTE_UPDATE});
         }
 
-
-        const route = await Route.findById(req.params.id);
+        const route = await Route.findById(req.params.id)
+            .populate({ path: 'routeStations' });
 
         req.body.activeWeekDays = route.activeWeekDays;
 

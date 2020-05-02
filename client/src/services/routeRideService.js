@@ -19,10 +19,11 @@ export default {
 
     attachFrontendFields2MongoFormat(ride) {
 
-        ride.depDateText = dateFormat(ride.departureDate, 'dd mmmm yyyy');
-        ride.depTimeText = dateFormat(ride.departureDate, 'HH:MM');
-        ride.arrDateText = dateFormat(ride.arrivalDate, 'dd mmmm yyyy');
-        ride.arrTimeText = dateFormat(ride.arrivalDate, 'HH:MM');
+        const last = ride.arrivalDates.length - 1;
+        ride.depDateText = dateFormat(ride.departureDates[0], 'dd mmmm yyyy');
+        ride.depTimeText = dateFormat(ride.departureDates[0], 'HH:MM');
+        ride.arrDateText = dateFormat(ride.arrivalDates[last], 'dd mmmm yyyy');
+        ride.arrTimeText = dateFormat(ride.arrivalDates[last], 'HH:MM');
         ride.carsCount = ride.cars.length;
 
         return ride;

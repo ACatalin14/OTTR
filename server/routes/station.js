@@ -5,6 +5,7 @@ const stationController = require('../controllers/stationController');
 
 router.get('/', stationController.index);
 router.get('/:id', stationController.show);
+router.get('/code/:code', stationController.getByCode);
 router.post('/', adminAuthorize, stationController.create);
 router.put('/:id', adminAuthorize, stationController.update);
 router.delete('/:id', adminAuthorize, stationController.delete);

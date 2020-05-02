@@ -26,19 +26,23 @@ module.exports = {
 
         const sourceId = req.params.sourceId;
         const destinationId = req.params.destinationId;
-        const date = req.body.date;
-        const viaStationId = req.body.viaStationId ? req.body.viaStationId : null;
-        const travelClassId = req.body.travelClassId ? req.body.travelClassId : null;
+        const date = parseInt(req.params.date);
+        const viaStationId = req.params.viaStationId ? req.params.viaStationId : null;
+        const travelClassId = req.params.travelClassId ? req.params.travelClassId : null;
 
         if (!sourceId || !destinationId || !date) {
             return res.status(400).json({err: CONSTANTS.ERRORS.MISSING_IMPORTANT_ARGUMENTS});
+        }
+
+        if (sourceId === destinationId) {
+            return res.status(400).json({err: CONSTANTS.ERRORS.DEPARTURE_IS_DESTINATION});
         }
 
         const rides = await module.exports.getAllRidesWithRoutes();
 
         const filteredRides = rides.filter( (ride) => {
 
-            const departureDate = new Date(ride.departureDate);
+            const departureDate = new Date(ride.departureDates[0]);
             const requestedDate = new Date(date);
             let nextDayAfterRequestedDate = new Date(date);
             nextDayAfterRequestedDate.setDate(nextDayAfterRequestedDate.getDate() + 1);
@@ -83,7 +87,7 @@ module.exports = {
         )
             .populate('train.trainCategory')
             .populate({
-                path: 'routeStations carTemplates.departureStation carTemplates.arrivalStation carTemplates.travelClass carTemplates.carLayout',
+                path: 'routeStations rides.routeStations carTemplates.departureStation carTemplates.arrivalStation carTemplates.travelClass carTemplates.carLayout',
                 populate: {
                     path: 'station'
                 }
@@ -102,7 +106,7 @@ module.exports = {
 
     checkRideHasWellFilteredCars(ride, sourceId, destinationId, viaStationId, travelClassId) {
 
-        const stationIds = ride.route.routeStations.map( routeStation => {
+        const stationIds = ride.routeStations.map( routeStation => {
             return routeStation.station._id;
         });
 

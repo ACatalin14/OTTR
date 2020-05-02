@@ -20,6 +20,15 @@ module.exports = {
         });
     },
 
+    getByCode: async (req, res) => {
+        await TravelClass.findOne({ code: req.params.code }, (err, travelClass) => {
+            if (err) {
+                return res.status(500).json({err: CONSTANTS.ERRORS.OTHER});
+            }
+            res.status(200).json(travelClass);
+        });
+    },
+
     create: async (req, res) => {
         const travelClass = {
             code: req.body.code,

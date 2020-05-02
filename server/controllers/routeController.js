@@ -10,7 +10,8 @@ module.exports = {
         await Route.find({deleted: {$ne: true}})
             .populate('train.trainCategory')
             .populate({
-                path: 'routeStations carTemplates.departureStation carTemplates.arrivalStation carTemplates.travelClass carTemplates.carLayout',
+                path: 'routeStations rides.routeStations carTemplates.departureStation carTemplates.arrivalStation' +
+                    ' carTemplates.travelClass carTemplates.carLayout',
                 populate: {
                     path: 'station'
                 }
@@ -37,7 +38,8 @@ module.exports = {
         await Route.find({})
             .populate('train.trainCategory')
             .populate({
-                path: 'routeStations carTemplates.departureStation carTemplates.arrivalStation carTemplates.travelClass carTemplates.carLayout',
+                path: 'routeStations ride.routeStations carTemplates.departureStation carTemplates.arrivalStation' +
+                    ' carTemplates.travelClass carTemplates.carLayout',
                 populate: {
                     path: 'station'
                 }
@@ -94,7 +96,8 @@ module.exports = {
         const routes = await Route.find({deleted: {$ne: true}})
             .populate('train.trainCategory')
             .populate({
-                path: 'routeStations carTemplates.departureStation carTemplates.arrivalStation carTemplates.travelClass carTemplates.carLayout',
+                path: 'routeStations rides.routeStations carTemplates.departureStation carTemplates.arrivalStation' +
+                    ' carTemplates.travelClass carTemplates.carLayout',
                 populate: {
                     path: 'station'
                 }

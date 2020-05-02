@@ -64,6 +64,7 @@
                                         placeholder="Source Station"
                                         prepend-icon="mdi-city"
                                         return-object
+                                        :rules="validationRules.fromStation"
                                     >
                                     </v-autocomplete>
                                     <v-autocomplete
@@ -78,6 +79,7 @@
                                         placeholder="Destination Station"
                                         prepend-icon="mdi-city"
                                         return-object
+                                        :rules="validationRules.toStation"
                                     >
                                     </v-autocomplete>
                                 </v-col>
@@ -98,7 +100,7 @@
                             </v-autocomplete>
                             <DatePicker
                                 name="rideDateSearch"
-                                label="Ride Date"
+                                label="Departure Date"
                                 :initial-value="new Date().toISOString().substr(0, 10)"
                                 :classes="'mt-3'"
                                 prepend-icon="mdi-calendar"
@@ -179,7 +181,15 @@
                     { path: 'carousel-img-3.png' },
                     { path: 'carousel-img-4.png' },
                     { path: 'carousel-img-5.png' },
-                ]
+                ],
+                validationRules: {
+                    'fromStation': [
+                        st => !!st || 'Departure station is required'
+                    ],
+                    'toStation': [
+                        st => !!st || 'Destination station is required'
+                    ]
+                }
             }
         },
         async created() {
@@ -204,8 +214,24 @@
                 }
             },
 
-            searchRides() {
+            async searchRides() {
 
+                try {
+                    if (!this.$refs.searchRidesForm.validate()) {
+                        this.searchRidesFormValid = false;
+                        return;
+                    }
+
+                    let filtersUrlQuery = 'from=' + this.fromStation.code +
+                        '&to=' + this.toStation.code +
+                        '&date=' + this.rideDateString;
+                    filtersUrlQuery += this.viaStation ? '&via=' + this.viaStation.code : '';
+                    filtersUrlQuery += this.selectedTravelClass ? '&class=' + this.selectedTravelClass.code : '';
+
+                    await this.$router.push('/ride-search/' + filtersUrlQuery);
+                } catch (error) {
+                    this.$emit('serverError', error.response.data.err.message);
+                }
             }
         }
     }
@@ -214,13 +240,13 @@
 <style scoped>
     .home {
         height: 100%;
-        background-image: repeating-linear-gradient(35deg, #E9E9E9, #FFF, #E9E9E9 15%);
+        background-image: repeating-linear-gradient(35deg, #E9E9E9, #FFF, #E9E9E9 20%);
     }
     .carousel-item {
         background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(100, 100, 255, 0.8));
     }
     .carousel {
-        box-shadow: 0 5px 10px rgba(50, 50, 221)
+        box-shadow: 0 5px 10px rgba(50, 50, 221, 1)
     }
     .carousel-heading {
         font-family: "Patua One", "Roboto", serif;

@@ -99,6 +99,10 @@ const CONSTANTS = {
         MISSING_IMPORTANT_ARGUMENTS: {
             code: 1017,
             message: 'The request is missing important arguments'
+        },
+        DEPARTURE_IS_DESTINATION: {
+            code: 1018,
+            message: 'Departure station cannot be the same as destination station'
         }
     }
 };

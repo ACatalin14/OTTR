@@ -28,7 +28,6 @@ const carSchema = mongoose.Schema({
         type: ObjectId,
         ref: 'CarLayout'
     },
-
     ride: {
         type: ObjectId,
         ref: 'Route.rides'
