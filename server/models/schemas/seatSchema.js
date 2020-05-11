@@ -7,6 +7,11 @@ const seatSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    // "selected" tells if the seat is beeing selected by any user in frontend while placing an order
+    selected: {
+        type: Boolean,
+        required: true
+    },
 
     reservations: [{
         type: ObjectId,

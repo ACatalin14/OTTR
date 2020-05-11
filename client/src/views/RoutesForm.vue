@@ -260,9 +260,7 @@
                 this.depTimeText = dateFormat(this.oldDbRoute.departureTime, 'HH:MM');
                 this.arrTimeText = dateFormat(this.oldDbRoute.arrivalTime, 'HH:MM');
 
-                let diff = new Date(this.oldDbRoute.arrivalTime) - new Date(this.oldDbRoute.departureTime);
-                this.arrivalDay = 1 + parseInt(diff / (1000 * 3600 * 24));
-
+                this.arrivalDay = new Date(this.oldDbRoute.arrivalTime).getDate();
                 this.route.activeWeekDays = JSON.parse(JSON.stringify(this.oldDbRoute.activeWeekDays));
 
                 // Route Stations

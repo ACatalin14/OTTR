@@ -48,6 +48,8 @@
             :ride="ride"
             :departure-station="departureStation"
             :arrival-station="destinationStation"
+            :via-station="viaStation"
+            :tavel-class="travelClass"
         ></RideCardSearchResult>
 
     </GrayContainer>
@@ -104,6 +106,11 @@
 
                 let queryFilters = queryString.parse('?' + this.$route.params.filters);
 
+                if ([queryFilters.from, queryFilters.to, queryFilters.date].includes(undefined)) {
+
+                    await this.$router.push({ name: 'pageNotFound', params: {}});
+                }
+
                 this.departureStation = await StationService.getStationByCode(queryFilters.from);
                 this.destinationStation = await StationService.getStationByCode(queryFilters.to);
                 this.rideDateString = dateFormat(new Date(queryFilters.date), 'dd mmmm yyyy');
@@ -112,10 +119,21 @@
                     await TravelClassService.getTravelClassByCode(queryFilters.class) :
                     null;
 
+                const today =  new Date();
+                const requestedDate = new Date(queryFilters.date);
+
+                // check if requested date is today
+                if (today.getDate() === requestedDate.getDate() &&
+                    today.getMonth() === requestedDate.getMonth() &&
+                    today.getFullYear() === requestedDate.getFullYear()
+                ) {
+                    requestedDate.setHours(today.getHours(), today.getMinutes(), today.getSeconds(), 0);
+                }
+
                 const filters = {
                     sourceId: this.departureStation._id,
                     destinationId: this.destinationStation._id,
-                    date: (new Date(queryFilters.date)).getTime(),
+                    date: requestedDate.getTime(),
                     viaStationId: this.viaStation ? this.viaStation._id : null,
                     travelClassId: this.travelClass ? this.travelClass._id : null
                 };

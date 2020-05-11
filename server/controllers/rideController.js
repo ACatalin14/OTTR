@@ -42,10 +42,31 @@ module.exports = {
 
         const filteredRides = rides.filter( (ride) => {
 
-            const departureDate = new Date(ride.departureDates[0]);
+            const departureRouteStation = ride.routeStations.find(routeStation => {
+                return routeStation.station._id === sourceId;
+            });
+
+            const destinationRouteStation = ride.routeStations.find(routeStation => {
+                return routeStation.station._id === destinationId;
+            });
+
+            if (!departureRouteStation || !destinationRouteStation) {
+                return false;
+            }
+
+            const depStationIndex = departureRouteStation.orderNo - 1;
+            const arrStationIndex = destinationRouteStation.orderNo - 1;
+
+            if (depStationIndex === ride.routeStations.length - 1 || arrStationIndex === 0) {
+                return false;
+            }
+
+            const departureDate = new Date(ride.departureDates[depStationIndex]);
             const requestedDate = new Date(date);
+            requestedDate.setHours(requestedDate.getUTCHours(), requestedDate.getUTCMinutes());
+
             let nextDayAfterRequestedDate = new Date(date);
-            nextDayAfterRequestedDate.setDate(nextDayAfterRequestedDate.getDate() + 1);
+            nextDayAfterRequestedDate.setUTCDate(nextDayAfterRequestedDate.getUTCDate() + 1);
             nextDayAfterRequestedDate.setHours(0, 0, 0, 0);
 
             let respectsDate = departureDate >= requestedDate && departureDate < nextDayAfterRequestedDate;
@@ -55,6 +76,78 @@ module.exports = {
         });
 
         return res.status(200).json(filteredRides);
+    },
+
+    /**
+     * Request Example:
+     * params:
+     *      sourceId: 5eef32f23fwef
+     *      destinationId: 5e3efqfqfqqg
+     *      date: 18357392579238
+     *      departureTime: 18357392579238     (e.g. 1 jan 1970 07:30)
+     *      arrivalTime: 183573925778522      (e.g. 1 jan 1970 09:34)
+     * @param req
+     * @param res
+     * @returns {Promise<*>}
+     */
+    getRideByDetails: async (req, res) => {
+
+        const sourceId = req.params.sourceId;
+        const destinationId = req.params.destinationId;
+        const date = parseInt(req.params.date);
+        const departureTime = parseInt(req.params.departureTime);
+        const arrivalTime = parseInt(req.params.arrivalTime);
+
+        if (!sourceId || !destinationId || !date || !departureTime || !arrivalTime) {
+            return res.status(400).json({err: CONSTANTS.ERRORS.MISSING_IMPORTANT_ARGUMENTS});
+        }
+
+        if (sourceId === destinationId) {
+            return res.status(400).json({err: CONSTANTS.ERRORS.DEPARTURE_IS_DESTINATION});
+        }
+
+        const rides = await module.exports.getAllRidesWithRoutes();
+
+        const searchedRide = rides.find( (ride) => {
+
+            const departureRouteStation = ride.routeStations.find(routeStation => {
+                return routeStation.station._id === sourceId;
+            });
+
+            const destinationRouteStation = ride.routeStations.find(routeStation => {
+                return routeStation.station._id === destinationId;
+            });
+
+            if (!departureRouteStation || !destinationRouteStation) {
+                return false;
+            }
+
+            const depStationIndex = departureRouteStation.orderNo - 1;
+            const arrStationIndex = destinationRouteStation.orderNo - 1;
+
+            if (depStationIndex === ride.routeStations.length - 1 || arrStationIndex === 0) {
+                return false;
+            }
+
+            const departureDateTime = new Date(ride.departureDates[depStationIndex]);
+            const arrivalDateTime = new Date(ride.arrivalDates[arrStationIndex]);
+            const requestedDepartureDateTime = new Date(date);
+            requestedDepartureDateTime.setHours(
+                new Date(departureTime).getHours(),
+                new Date(departureTime).getMinutes()
+            );
+            const requestedArrivalTime = new Date(arrivalTime);
+
+            return departureDateTime.getTime() === requestedDepartureDateTime.getTime()
+                && arrivalDateTime.getHours() === requestedArrivalTime.getHours()
+                && arrivalDateTime.getMinutes() === requestedArrivalTime.getMinutes();
+        });
+
+        if (!searchedRide) {
+            return res.status(404).json({err: CONSTANTS.ERRORS.RIDE_WITH_DETAILS_NOT_FOUND});
+        }
+
+        return res.status(200).json(searchedRide);
     },
 
     getAllRidesWithRoutes: async () => {

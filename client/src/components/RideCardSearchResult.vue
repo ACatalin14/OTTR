@@ -8,7 +8,7 @@
                             <v-row justify="start" no-gutters>
                                 <v-col cols="auto">
                                     <h2 class="title font-weight-bold">Departure</h2>
-                                    <h3 class="subtitle-2 font-weight-bold">{{ departureDate }}</h3>
+                                    <h3 class="subtitle-2 font-weight-bold">{{ departureDateText }}</h3>
                                     <h1 class="display-1 font-weight-bold">{{ departureTime }}</h1>
                                 </v-col>
                             </v-row>
@@ -50,10 +50,30 @@
                     </v-row>
                 </v-card-text>
                 <v-divider></v-divider>
-                <v-row no-gutters v-show="showRouteStations" class="mt-4 mx-5 mb-2">
+                <v-row no-gutters v-if="showRouteStations" class="mt-4 mx-5 mb-2">
                     <v-col>
-                        <v-stepper>
-                            <v-stepper-header class="elevation-0">
+                        <v-stepper
+                            v-if="showVerticalStepperRouteStations()"
+                            vertical
+                        >
+                            <template
+                                v-for="station in ride.routeStations"
+                            >
+                                <v-stepper-step
+                                    :key="station._id"
+                                    :complete="isStationStepComplete(station)"
+                                    step=""
+                                >
+                                    {{ station.station.name }}
+                                    <small>{{ showTimeForStationOnStepper(station) }}</small>
+                                </v-stepper-step>
+                                <v-stepper-content step="" :key="station.orderNo"></v-stepper-content>
+                            </template>
+                        </v-stepper>
+                        <v-stepper
+                            v-if="!showVerticalStepperRouteStations()"
+                        >
+                            <v-stepper-header>
                                 <template v-for="station in ride.routeStations">
                                     <v-stepper-step
                                         :key="station._id"
@@ -81,9 +101,13 @@
                         outlined
                         @click="showRouteStations = !showRouteStations"
                     >
-                        Show Route Stations
+                        {{ showHideRouteStationsText }}
                     </v-btn>
-                    <v-btn color="primary" class="body-1 text-capitalize px-5">Book this ride</v-btn>
+                    <v-btn
+                        color="primary"
+                        class="body-1 text-capitalize px-5"
+                        @click="bookRide"
+                    >Book this ride</v-btn>
                 </v-card-actions>
             </v-card>
         </v-col>
@@ -98,11 +122,14 @@
         props: {
             ride: Object,
             departureStation: Object,
-            arrivalStation: Object
+            arrivalStation: Object,
+            viaStation: Object,
+            travelClass: Object
         },
         data() {
             return {
-                departureDate: '',
+                departureDateText: '',
+                departureDate: null,
                 departureTime: '',
                 arrivalDate: '',
                 arrivalTime: '',
@@ -132,10 +159,12 @@
             const depDateFromMySource = new Date(this.ride.departureDates[depStationIndex]);
             const arrDateToMyDestination = new Date(this.ride.arrivalDates[arrStationIndex]);
 
-            this.departureDate = dateFormat(depDateFromMySource, 'dd mmmm yyyy');
+            this.departureDateText = dateFormat(depDateFromMySource, 'dd mmmm yyyy');
             this.departureTime = dateFormat(new Date(departureRouteStation.departureTime), 'HH:MM');
             this.arrivalDate = dateFormat(arrDateToMyDestination, 'dd mmmm yyyy');
             this.arrivalTime = dateFormat(new Date(arrivalRouteStation.arrivalTime), 'HH:MM');
+
+            this.departureDate = new Date(depDateFromMySource);
 
             // distance and spent time on traveling
             this.distance = arrivalRouteStation.distance - departureRouteStation.distance;
@@ -152,6 +181,12 @@
             this.train = this.ride.route.train.trainCategory.code + ' ' + this.ride.route.train.number;
 
             this.availableTravelClasses = [... new Set(this.ride.cars.map(car => car.travelClass.name))].join(', ');
+        },
+
+        computed: {
+            showHideRouteStationsText() {
+                return this.showRouteStations ? 'Hide Route Stations' : 'Show Route Stations';
+            }
         },
 
         methods: {
@@ -172,6 +207,25 @@
                 }
 
                 return this.fromTimeDateToTimeText(routeStation.departureTime);
+            },
+
+            showVerticalStepperRouteStations() {
+                return (this.$vuetify.breakpoint.smAndDown) ||
+                    (this.$vuetify.breakpoint.mdOnly && this.ride.routeStations.length >= 7) ||
+                    (this.$vuetify.breakpoint.lgOnly && this.ride.routeStations.length >= 12) ||
+                    (this.$vuetify.breakpoint.xlOnly && this.ride.routeStations.length >= 18);
+            },
+
+            async bookRide() {
+
+                let detailsUrlQuery = '';
+                detailsUrlQuery += 'from=' + this.departureStation.code;
+                detailsUrlQuery += '&to=' + this.arrivalStation.code;
+                detailsUrlQuery += '&date=' + dateFormat(this.departureDate, 'yyyy-mm-dd');
+                detailsUrlQuery += '&departureTime=' + this.departureTime;
+                detailsUrlQuery += '&arrivalTime=' + this.arrivalTime;
+
+                await this.$router.push({ name: 'rideBooking', params: { details: detailsUrlQuery }});
             }
         }
     }

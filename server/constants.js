@@ -103,6 +103,10 @@ const CONSTANTS = {
         DEPARTURE_IS_DESTINATION: {
             code: 1018,
             message: 'Departure station cannot be the same as destination station'
+        },
+        RIDE_WITH_DETAILS_NOT_FOUND: {
+            code: 1019,
+            message: 'Ride with specified details has not been found.'
         }
     }
 };

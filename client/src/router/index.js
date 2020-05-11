@@ -17,6 +17,7 @@ import CarLayoutsForm from "../views/CarLayoutsForm";
 import RoutesForm from "../views/RoutesForm";
 import TheRides from "../views/TheRides";
 import RideSearchPage from "../views/RideSearchResultsPage";
+import RideBookingPage from "../views/RideBookingPage";
 
 Vue.use(VueRouter);
 
@@ -129,6 +130,15 @@ const routes = [
         path: '/ride-search/:filters',
         name: 'rideSearchResults',
         component: RideSearchPage,
+    },
+    {
+        // path example: /book-ride/from=BR&to=BUCN&date=2020-04-29&via=BZ&class=II&departureTime=03:15&arrivalTime=09:45
+        path: '/book-ride/:details',
+        name: 'rideBooking',
+        component: RideBookingPage,
+        meta: {
+            requiredAuthGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED
+        }
     },
     {
         path: '/copyrights',

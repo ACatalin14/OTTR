@@ -25,6 +25,7 @@ export default {
         ride.arrDateText = dateFormat(ride.arrivalDates[last], 'dd mmmm yyyy');
         ride.arrTimeText = dateFormat(ride.arrivalDates[last], 'HH:MM');
         ride.carsCount = ride.cars.length;
+        ride.routeStationsCount = ride.routeStations.length;
 
         return ride;
     },

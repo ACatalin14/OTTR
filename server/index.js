@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 mongoose.set("useCreateIndex", true);
 mongoose.set("useFindAndModify", false);
+mongoose.set("useUnifiedTopology", true);
 mongoose
     .connect(config.db.connection, { useNewUrlParser: true})
     .then(() => {

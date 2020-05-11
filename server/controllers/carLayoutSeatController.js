@@ -1,4 +1,3 @@
-const CONSTANTS = require('../constants');
 const CarLayout = require("../models/carLayout");
 
 module.exports = {
@@ -12,7 +11,8 @@ module.exports = {
             if (element.seatNumber !== undefined) {
                 seats.push({
                     number: element.seatNumber,
-                    reserved: false
+                    reservations: [],
+                    selected: false
                 });
             }
         });

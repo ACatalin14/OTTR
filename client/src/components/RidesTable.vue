@@ -127,6 +127,7 @@
                 { text: 'Arrival Date', value: 'arrDateText', align: 'left' },
                 { text: 'Arrival Time', value: 'arrTimeText', align: 'left' },
                 { text: 'Number of Cars', value: 'carsCount', align: 'left' },
+                { text: 'Number of Stations', value: 'routeStationsCount', align: 'left' },
                 { text: 'Actions', value: 'action', align: 'center', sortable: false }
             ],
             items: [],

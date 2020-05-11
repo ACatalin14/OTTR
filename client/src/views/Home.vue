@@ -228,7 +228,7 @@
                     filtersUrlQuery += this.viaStation ? '&via=' + this.viaStation.code : '';
                     filtersUrlQuery += this.selectedTravelClass ? '&class=' + this.selectedTravelClass.code : '';
 
-                    await this.$router.push('/ride-search/' + filtersUrlQuery);
+                    await this.$router.push({ name: 'rideSearchResults', params: { filters: filtersUrlQuery }});
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
