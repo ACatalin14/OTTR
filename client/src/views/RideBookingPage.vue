@@ -224,7 +224,7 @@
         },
 
         watch: {
-            '$vuetify.breakpoint.xsOnly': {
+            '$vuetify.breakpoint.smAndDown': {
                 async handler() {
                     if (!this.availableCars.length) {
                         return;
@@ -331,12 +331,11 @@
                 try {
 
                     if (!seat.selected) {
-                        console.log('SELECT');
 
                         await SeatService.selectSeat(seat._id);
 
                         this.selectedSeatsTimers[seat._id] = setInterval(
-                            SeatService.selectSeat,
+                            SeatService.preserveSeat,
                             CONSTANTS.SEAT_SELECTION_REFRESH_TIMEOUT,
                             seat._id
                         );
@@ -344,7 +343,7 @@
                         this.ownSelectedSeats.push(seat);
 
                     } else if (seat.selectingUser === this.$store.getters.getUser._id) {
-                        console.log('DESELECT');
+
                         clearInterval(this.selectedSeatsTimers[seat._id]);
                         delete this.selectedSeatsTimers[seat._id];
 
@@ -379,7 +378,7 @@
 
                 carLayoutWithFreeSeats = CarLayoutService.transformFromMongo2FrontendModel(carLayoutWithFreeSeats);
 
-                if (this.$vuetify.breakpoint.xsOnly) {
+                if (this.$vuetify.breakpoint.smAndDown) {
                     carLayoutWithFreeSeats = CarLayoutService.rotateCarLayout(carLayoutWithFreeSeats);
                 }
 

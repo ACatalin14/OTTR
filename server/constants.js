@@ -125,6 +125,10 @@ const CONSTANTS = {
             code: 1023,
             message: 'Failed to deselect seat.'
         },
+        NO_SEAT_TO_PRESERVE: {
+            code: 1023,
+            message: 'Seat to preserve was not found.'
+        },
     }
 };
 

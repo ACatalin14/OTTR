@@ -4,10 +4,6 @@ const Car = require("../models/car");
 const ObjectId = mongoose.mongo.ObjectId;
 
 let seatDeselectionTimers = {};
-let dbLocks = {
-    selectSeatLock: false,
-    deselectSeat: false
-};
 
 module.exports = {
 
@@ -25,8 +21,6 @@ module.exports = {
      */
     selectSeat: async (req, res) => {
 
-        console.log('Select Seat START');
-
         let updatedCar, updatedSeat, deselectSeatTimer;
         const seatId = req.params.id;
 
@@ -41,10 +35,10 @@ module.exports = {
                                     selected: false,
                                     selectingUser: null
                                 },
-                                {
-                                    selected: true,
-                                    selectingUser: ObjectId(req.userData._id)
-                                }
+                                // {
+                                //     selected: true,
+                                //     selectingUser: ObjectId(req.userData._id)
+                                // }
                             ]
 
                         }
@@ -58,35 +52,22 @@ module.exports = {
             ).exec();
 
             if (!updatedCar) {
-                console.log('Select Seat FINISH err');
-                dbLocks.selectSeatLock = true;
+
                 return res.status(400).json({ err: CONSTANTS.ERRORS.SEAT_ALREADY_SELECTED });
             }
 
             updatedSeat = updatedCar.seats.find(s => s._id.equals(ObjectId(seatId)));
 
-            // clear old timer if existent
-            if (seatDeselectionTimers[seatId]) {
-                clearTimeout(seatDeselectionTimers[seatId]);
-                delete seatDeselectionTimers[seatId];
-            }
-
             // add the timer by indexing after seat id
-            deselectSeatTimer = setTimeout(module.exports.automaticallyDeselectSeat, CONSTANTS.SEAT_SELECTION_TIMEOUT, updatedSeat);
+            deselectSeatTimer = setTimeout(module.exports.automaticallyDeselectSeat, CONSTANTS.SEAT_SELECTION_TIMEOUT, updatedSeat._id);
             seatDeselectionTimers[seatId] = deselectSeatTimer;
-
-            console.log('After addition:');
-            console.log(Object.keys(seatDeselectionTimers));
-            console.log('Select Seat FINISH');
 
         } catch (error) {
 
             console.error(error);
-            dbLocks.selectSeatLock = true;
             return res.status(500).json({err: CONSTANTS.ERRORS.FAILED_TO_UPDATE_SEAT});
         }
 
-        dbLocks.selectSeatLock = true;
         return res.status(200).json(updatedSeat);
     },
 
@@ -108,7 +89,7 @@ module.exports = {
      * @returns {Promise<*>}
      */
     deselectSeat: async (req, res) => {
-        console.log('Deselect Seat START');
+
         let updatedCar, updatedSeat;
         const seatId = req.params.id;
 
@@ -134,7 +115,6 @@ module.exports = {
             ).exec();
 
             if (!updatedCar) {
-                console.log('Deselect Seat FINISH err');
 
                 return res.status(500).json({err: CONSTANTS.ERRORS.FAILED_TO_DESELECT_SEAT});
             }
@@ -145,10 +125,6 @@ module.exports = {
             clearTimeout(seatDeselectionTimers[seatId]);
             delete seatDeselectionTimers[seatId];
 
-            console.log('After remove:');
-            console.log(Object.keys(seatDeselectionTimers));
-            console.log('Deselect Seat FINISH');
-
         } catch (error) {
 
             console.error(error);
@@ -158,8 +134,7 @@ module.exports = {
         return res.status(200).json(updatedSeat);
     },
 
-    automaticallyDeselectSeat: async (seat) => {
-        console.log('AutoDeselect Seat START');
+    automaticallyDeselectSeat: async (seatId) => {
 
         try {
 
@@ -167,7 +142,7 @@ module.exports = {
                 {
                     seats: {
                         $elemMatch: {
-                            _id: ObjectId(seat._id),
+                            _id: ObjectId(seatId),
                             selected: true
                         }
                     }
@@ -180,17 +155,31 @@ module.exports = {
                 }
             ).exec();
 
-            delete seatDeselectionTimers[seat._id];
-
-            console.log('After automatic remove:');
-            console.log(Object.keys(seatDeselectionTimers));
-            console.log('AutoDeselect Seat FINISH')
+            delete seatDeselectionTimers[seatId];
 
         } catch (error) {
 
             console.error('Something bad happened when autodeselecting a seat.');
             console.error(error);
         }
+    },
 
+    preserveSeat: (req, res) => {
+
+        const seatId = req.params.id;
+
+        if (!seatId || !seatDeselectionTimers[seatId]) {
+
+            return res.status(400).json({err: CONSTANTS.ERRORS.NO_SEAT_TO_PRESERVE});
+        }
+
+        // clear old timer
+        clearTimeout(seatDeselectionTimers[seatId]);
+        delete seatDeselectionTimers[seatId];
+
+        // reset the timer starting from now
+        seatDeselectionTimers[seatId] = setTimeout(module.exports.automaticallyDeselectSeat, CONSTANTS.SEAT_SELECTION_TIMEOUT, seatId);
+
+        return res.status(200).json({seatId});
     }
 };

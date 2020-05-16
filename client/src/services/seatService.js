@@ -3,7 +3,6 @@ import CONSTANTS from "../constants";
 
 export default {
     selectSeat(seatId) {
-        console.log('Add this seat: ' + seatId);
 
         return axios
             .patch(CONSTANTS.SERVER_URL + '/seat/' + seatId + '/selected/true')
@@ -12,10 +11,17 @@ export default {
     },
 
     deselectSeat(seatId) {
-        console.log('Remove this seat: ' + seatId);
 
         return axios
             .patch(CONSTANTS.SERVER_URL + '/seat/' + seatId + '/selected/false')
+            .then(response => response.data)
+            .catch(this.throwServerError);
+    },
+
+    preserveSeat(seatId) {
+
+        return axios
+            .patch(CONSTANTS.SERVER_URL + '/seat/' + seatId + '/preserve')
             .then(response => response.data)
             .catch(this.throwServerError);
     },
