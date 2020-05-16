@@ -12,5 +12,6 @@ router.use('/route', require('./route'));
 router.use('/ride', require('./ride'));
 router.use('/order', require('./order'));
 router.use('/seat', require('./seat'));
+router.use('/config', require('./config'));
 
 module.exports = router;

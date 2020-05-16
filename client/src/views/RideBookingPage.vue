@@ -138,10 +138,24 @@
                         </v-row>
                     </v-stepper-content>
                     <v-stepper-content :step="formHeaderSteps[1].orderNo">
-
+                        <PassengerTypesFormStep
+                            :ride-distance="distance"
+                            :available-cars="availableCars"
+                            :tickets="requestedTickets"
+                            @changedTickets="onChangeTickets"
+                            @nextBookingStep="onNextBookingStep"
+                            @previousBookingStep="onPreviousBookingStep"
+                        >
+                        </PassengerTypesFormStep>
                     </v-stepper-content>
                     <v-stepper-content :step="formHeaderSteps[2].orderNo">
-
+                        <ConfirmationBookingStep
+                            :available-cars="availableCars"
+                            :tickets="requestedTickets"
+                            @nextBookingStep="onNextBookingStep"
+                            @previousBookingStep="onPreviousBookingStep"
+                        >
+                        </ConfirmationBookingStep>
                     </v-stepper-content>
                     <v-stepper-content :step="formHeaderSteps[3].orderNo">
 
@@ -153,20 +167,23 @@
 </template>
 
 <script>
+    import CONSTANTS from "../constants";
     import RideService from "../services/rideService";
     import StationService from "../services/stationService";
     import CarLayoutService from "../services/carLayoutService";
     import SeatService from "../services/seatService";
+    import ConfigService from "../services/configService";
     import GrayContainer from "../components/GrayContainer";
     import CarLayoutWithSelectableSeats from "../components/CarLayoutWithSelectableSeats";
-    import CONSTANTS from "../constants";
+    import PassengerTypesFormStep from "../components/PassengerTypesFormStep";
+    import ConfirmationBookingStep from "../components/ConfirmationBookingStep";
 
     const queryString = require('query-string');
     const dateFormat = require('dateformat');
 
     export default {
         name: "RideBookingPage",
-        components: {CarLayoutWithSelectableSeats, GrayContainer},
+        components: {ConfirmationBookingStep, PassengerTypesFormStep, CarLayoutWithSelectableSeats, GrayContainer},
         data() {
             return {
                 ride: null,
@@ -181,13 +198,15 @@
                 departureTimeText: '',
                 arrivalTimeText: '',
                 currentStepperStep: 1,
-                tickets: [],
+                requestedTickets: [],
                 availableCars: [],
                 currentDisplayedCarIndex: 0,
                 currentDisplayedCarLayout: null,
-                ownSelectedSeats: [],
                 toggleSeatsLock: false,
                 selectedSeatsTimers: {},
+                distance: 0,
+                config: null,
+                kmPrice: 0,
                 formHeaderSteps: [
                     { orderNo: 1, title: 'Pick Your Seats' },
                     { orderNo: 2, title: 'Passenger Types' },
@@ -214,7 +233,7 @@
             },
 
             seatsNotPicked() {
-                return this.ownSelectedSeats.length === 0;
+                return this.requestedTickets.length === 0;
             },
 
             availableCarsExist() {
@@ -287,6 +306,20 @@
 
                 await this.updateAvailableCarsAndCurrentDisplayedCarLayout();
 
+                // calculate distance of this ride
+                const departureRouteStation = this.ride.routeStations.find(routeStation => {
+                    return routeStation.station._id === this.departureStation._id;
+                });
+
+                const arrivalRouteStation = this.ride.routeStations.find(routeStation => {
+                    return routeStation.station._id === this.destinationStation._id;
+                });
+
+                this.distance = arrivalRouteStation.distance - departureRouteStation.distance;
+
+                this.config = await ConfigService.getConfig();
+                this.kmPrice = this.config.kmPrice;
+
             } catch (error) {
 
                 this.rideNotFound = true;
@@ -340,15 +373,21 @@
                             seat._id
                         );
 
-                        this.ownSelectedSeats.push(seat);
+                        this.requestedTickets.push({
+                            seat: seat,
+                            passengerType: null,
+                            price: 0
+                        });
+
+                        this.requestedTickets.sort((a, b) => a.seat.number - b.seat.number)
 
                     } else if (seat.selectingUser === this.$store.getters.getUser._id) {
 
                         clearInterval(this.selectedSeatsTimers[seat._id]);
                         delete this.selectedSeatsTimers[seat._id];
 
-                        const index = this.ownSelectedSeats.findIndex(s => s._id === seat._id);
-                        this.ownSelectedSeats.splice(index, 1);
+                        const index = this.requestedTickets.findIndex(t => t.seat._id === seat._id);
+                        this.requestedTickets.splice(index, 1);
 
                         await SeatService.deselectSeat(seat._id);
                     }
@@ -399,6 +438,25 @@
                 this.currentDisplayedCarLayout = CarLayoutService.fillCarLayoutWithColorfulSeats(
                     currentCar, departureRouteStation, arrivalRouteStation, this.$store.getters.getUser
                 );
+            },
+
+            onChangeTickets(newTickets) {
+
+                this.requestedTickets = JSON.parse(JSON.stringify(newTickets));
+
+                this.requestedTickets.forEach(t => {
+                    t.price = this.kmPrice * this.distance * (1 - t.passengerType.discount / 100);
+                });
+            },
+
+            onNextBookingStep() {
+
+                this.currentStepperStep++;
+            },
+
+            onPreviousBookingStep() {
+
+                this.currentStepperStep--;
             }
         }
     }
