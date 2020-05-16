@@ -194,6 +194,18 @@ module.exports = {
                     }
                 }
             })
+            .populate({
+                path: 'rides.cars',
+                populate: {
+                    path: 'seats.reservations',
+                    populate: {
+                        path: 'order passengerType departureStation arrivalStation',
+                        populate: {
+                            path: 'station'
+                        }
+                    }
+                }
+            })
             .exec();
     },
 

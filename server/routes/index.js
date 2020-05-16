@@ -10,5 +10,7 @@ router.use('/student', require('./student'));
 router.use('/car-layout', require('./carLayout'));
 router.use('/route', require('./route'));
 router.use('/ride', require('./ride'));
+router.use('/order', require('./order'));
+router.use('/seat', require('./seat'));
 
 module.exports = router;

@@ -12,7 +12,8 @@ module.exports = {
                 seats.push({
                     number: element.seatNumber,
                     reservations: [],
-                    selected: false
+                    selected: false,
+                    selectingUser: null
                 });
             }
         });

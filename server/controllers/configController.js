@@ -12,6 +12,18 @@ module.exports = {
         });
     },
 
+    getConfig: async () => {
+
+        return Config.findOne({}).exec();
+    },
+
+    setConfig: async (settings) => {
+
+        await Config.updateOne({}, {
+            $set: settings
+        });
+    },
+
     createIfNotCreated: async () => {
 
         const configObject = await Config.findOne({}).exec();

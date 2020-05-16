@@ -182,9 +182,9 @@ export default {
      * @param car
      * @param departureStation {RouteStation}
      * @param arrivalStation {RouteStation}
-     * @param ownSelectedSeats {array}
+     * @param user
      */
-    fillCarLayoutWithReservedSeats(car, departureStation, arrivalStation, ownSelectedSeats) {
+    fillCarLayoutWithColorfulSeats(car, departureStation, arrivalStation, user) {
 
         const reqDep = departureStation.orderNo;    // required (wished) departure Station number
         const reqArr = arrivalStation.orderNo;    // required (wished) departure Station number
@@ -192,12 +192,13 @@ export default {
         for (let seat of car.seats) {
 
             if (!seat.reservations.length && !seat.selected) {
+                // clearly a free seat (no reservations + not selected by anyone)
                 continue;
             }
 
-            if (seat.selected && ownSelectedSeats.every(s => s._id !== seat._id)) {
-                // found a seat which is not selected by the one doing the order on this client
-                this.changeSeatAppearance(car, seat);
+            if (seat.selected) {
+                // found a seat which selected by someone (the client or somebody else using right now the app)
+                this.changeSeatAppearance(car, seat, user);
                 continue;
             }
 
@@ -218,10 +219,11 @@ export default {
             }
 
             if (!conflictsWithOurRide) {
+                // free seat for requested ride
                 continue;
             }
 
-            this.changeSeatAppearance(car, seat);
+            this.changeSeatAppearance(car, seat, user);
         }
 
         return car.carLayout;
@@ -241,16 +243,27 @@ export default {
 
             case CONSTANTS.LAYOUT.ELEMENTS.SEAT_DOWN:
                 return CONSTANTS.LAYOUT.ELEMENTS.RESERVED_SEAT_DOWN;
+
+            default:
+                console.error('Unknown seat type to make an association');
+                return null;
         }
     },
 
-    changeSeatAppearance(car, seat) {
+    changeSeatAppearance(car, seat, user) {
 
         // search for seat in car layout
         const index = car.carLayout.gridLayout.findIndex( elem => {
             return elem.seatNumber === seat.number;
         });
 
+        // check if seat is selected by our client
+        if (seat.selectingUser === user._id) {
+            car.carLayout.gridLayout[index].type = this.getSelectedSeatTypeFromUnselected(car.carLayout.gridLayout[index].type);
+            return;
+        }
+
+        // this is a seat which is selected by another client
         car.carLayout.gridLayout[index].type = this.getCorrespondingReservedSeatAppearance(car.carLayout.gridLayout[index].type);
     },
 

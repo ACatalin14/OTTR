@@ -13,6 +13,6 @@ const configSchema = mongoose.Schema({
 
 });
 
-const Config = mongoose.model("Ticket", configSchema, 'config');
+const Config = mongoose.model("Config", configSchema, 'config');
 
 module.exports = Config;

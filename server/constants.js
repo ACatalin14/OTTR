@@ -15,6 +15,7 @@ const CONSTANTS = {
             WALL: 7
         }
     },
+    SEAT_SELECTION_TIMEOUT: 10 * 1000,     // 15 mins to keep "reserved" a seat for booking purposes
     ERRORS: {
         OTHER: {
             code: 0,
@@ -107,7 +108,23 @@ const CONSTANTS = {
         RIDE_WITH_DETAILS_NOT_FOUND: {
             code: 1019,
             message: 'Ride with specified details has not been found.'
-        }
+        },
+        SEAT_ALREADY_RESERVED: {
+            code: 1020,
+            message: 'Requested seat is already reserved by somebody else.'
+        },
+        FAILED_TO_UPDATE_SEAT: {
+            code: 1021,
+            message: 'Failed to update seat.'
+        },
+        SEAT_ALREADY_SELECTED: {
+            code: 1022,
+            message: 'Requested seat has already been selected by somebody else.'
+        },
+        FAILED_TO_DESELECT_SEAT: {
+            code: 1023,
+            message: 'Failed to deselect seat.'
+        },
     }
 };
 

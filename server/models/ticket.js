@@ -17,8 +17,12 @@ const ticketSchema = mongoose.Schema({
         type: ObjectId,
         ref: 'Route.rides'
     },
+    car: {
+        type: ObjectId,
+        ref: 'Car'
+    },
     seat: {
-        rtpe: ObjectId,
+        type: ObjectId,
         ref: 'Car.seats'
     },
     departureStation: {

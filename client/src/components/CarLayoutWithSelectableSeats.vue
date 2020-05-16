@@ -35,7 +35,7 @@
                     :width=" item.w * carLayout.cellSize + gridMargin * (item.w - 1) "
                     :height=" item.h * carLayout.cellSize + gridMargin * (item.h - 1) "
                     :class="{ 'hoverable-item': item.seatNumber && !isReserved(item.type) }"
-                    @click="toggleSeat(item.seatNumber)"
+                    @click="toggleSeat(item)"
                 >
                     <div
                         v-if="item.seatNumber"
@@ -77,12 +77,17 @@
                 return CarLayoutService.getPngNameFromElementType(elementType);
             },
 
-            toggleSeat(seatNumber) {
-                if (!seatNumber) {
+            toggleSeat(seatItem) {
+
+                if (!seatItem.seatNumber) {
                     return;
                 }
 
-                this.$emit('toggledSeat', seatNumber);
+                if (this.isReserved(seatItem.type)) {
+                    return;
+                }
+
+                this.$emit('toggledSeat', seatItem.seatNumber);
             },
 
             isReserved(elementType) {

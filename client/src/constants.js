@@ -44,6 +44,7 @@ const CONSTANTS = {
         LOGIN_FAILED: 'Login failed. Please check your credentials.',
         UNREACHABLE_SERVER: 'Couldn\'t contact the server.'
     },
+    SEAT_SELECTION_REFRESH_TIMEOUT: 5 * 1000,      // refresh selected seats to remind server to not unselect them
     SERVER_URL: 'http://localhost:3000/api'
 };
 

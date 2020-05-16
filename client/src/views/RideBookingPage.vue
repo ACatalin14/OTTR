@@ -63,7 +63,10 @@
                     </template>
                 </v-stepper-header>
                 <v-stepper-items>
-                    <v-stepper-content :step="formHeaderSteps[0].orderNo" class="pt-4">
+                    <v-stepper-content
+                        :step="formHeaderSteps[0].orderNo"
+                        class="pt-4"
+                    >
                         <v-row no-gutters>
                             <v-spacer></v-spacer>
                             <v-col cols="auto">
@@ -80,9 +83,17 @@
                                     </v-col>
                                     <v-col cols="auto">
                                         <v-row no-gutters justify="center">
-                                            <h2 class="title font-weight-black">Car {{ availableCars[currentDisplayedCarIndex].number }}</h2>
+                                            <h2
+                                                v-if="availableCarsExist"
+                                                class="title font-weight-black"
+                                            >
+                                                Car {{ availableCars[currentDisplayedCarIndex].number }}
+                                            </h2>
                                         </v-row>
-                                        <v-row no-gutters justify="center">
+                                        <v-row
+                                            v-if="availableCarsExist"
+                                            no-gutters justify="center"
+                                        >
                                             {{ availableCars[currentDisplayedCarIndex].travelClass.name }}
                                         </v-row>
                                     </v-col>
@@ -108,6 +119,7 @@
                             <v-spacer></v-spacer>
                             <v-col cols="auto">
                                 <CarLayoutWithSelectableSeats
+                                    v-if="availableCarsExist"
                                     :car-layout="currentDisplayedCarLayout"
                                     @toggledSeat="toggleSelectedSeat"
                                 ></CarLayoutWithSelectableSeats>
@@ -144,8 +156,10 @@
     import RideService from "../services/rideService";
     import StationService from "../services/stationService";
     import CarLayoutService from "../services/carLayoutService";
+    import SeatService from "../services/seatService";
     import GrayContainer from "../components/GrayContainer";
     import CarLayoutWithSelectableSeats from "../components/CarLayoutWithSelectableSeats";
+    import CONSTANTS from "../constants";
 
     const queryString = require('query-string');
     const dateFormat = require('dateformat');
@@ -156,6 +170,7 @@
         data() {
             return {
                 ride: null,
+                detailsFromQuery: null,
                 departureStation: null,
                 destinationStation: null,
                 rideDateString: '',
@@ -167,11 +182,12 @@
                 arrivalTimeText: '',
                 currentStepperStep: 1,
                 tickets: [],
-                availableCarsDbSynced: [],
                 availableCars: [],
                 currentDisplayedCarIndex: 0,
                 currentDisplayedCarLayout: null,
                 ownSelectedSeats: [],
+                toggleSeatsLock: false,
+                selectedSeatsTimers: {},
                 formHeaderSteps: [
                     { orderNo: 1, title: 'Pick Your Seats' },
                     { orderNo: 2, title: 'Passenger Types' },
@@ -199,17 +215,22 @@
 
             seatsNotPicked() {
                 return this.ownSelectedSeats.length === 0;
+            },
+
+            availableCarsExist() {
+
+                return this.availableCars.length > 0;
             }
         },
 
         watch: {
             '$vuetify.breakpoint.xsOnly': {
-                handler() {
+                async handler() {
                     if (!this.availableCars.length) {
                         return;
                     }
 
-                    this.updateCurrentDisplayedCarLayout();
+                    await this.updateAvailableCarsAndCurrentDisplayedCarLayout();
                 }
             }
         },
@@ -247,7 +268,7 @@
                 this.arrivalTime.setHours(hours, minutes, 0, 0);
                 this.arrivalTimeText = dateFormat(this.arrivalTime, 'HH:MM');
 
-                const details = {
+                this.detailsFromQuery = {
                     sourceId: this.departureStation._id,
                     destinationId: this.destinationStation._id,
                     date: (new Date(queryDetails.date)).getTime(),
@@ -255,7 +276,7 @@
                     arrivalTime: this.arrivalTime.getTime(),
                 };
 
-                this.ride = await RideService.getRideByDetails(details);
+                this.ride = await RideService.getRideByDetails(this.detailsFromQuery);
 
                 this.rideNotFound = (this.ride === null);
                 this.rideFound = (this.ride !== null);
@@ -264,15 +285,7 @@
                     return;
                 }
 
-                this.availableCarsDbSynced = RideService.getCarsContainingSourceDestination(
-                    this.ride,
-                    this.departureStation._id,
-                    this.destinationStation._id
-                );
-
-                this.availableCars = JSON.parse(JSON.stringify(this.availableCarsDbSynced));
-
-                this.updateCurrentDisplayedCarLayout();
+                await this.updateAvailableCarsAndCurrentDisplayedCarLayout();
 
             } catch (error) {
 
@@ -285,67 +298,96 @@
         },
 
         methods: {
-            decrementAvailableCarIfPossible() {
+            async decrementAvailableCarIfPossible() {
                 if (this.currentDisplayedCarIndex === 0) {
                     return;
                 }
 
                 this.currentDisplayedCarIndex--;
-                this.updateCurrentDisplayedCarLayout();
+                await this.updateAvailableCarsAndCurrentDisplayedCarLayout();
             },
 
-            incrementAvailableCarIfPossible() {
+            async incrementAvailableCarIfPossible() {
                 if (this.currentDisplayedCarIndex === this.availableCars.length - 1) {
                     return;
                 }
 
                 this.currentDisplayedCarIndex++;
-                this.updateCurrentDisplayedCarLayout();
+                await this.updateAvailableCarsAndCurrentDisplayedCarLayout();
             },
 
-            toggleSelectedSeat(seatNumber) {
+            async toggleSelectedSeat(seatNumber) {
+
+                if (this.toggleSeatsLock) {
+                    return;
+                }
+
+                this.toggleSeatsLock = true;
+
                 let seat = this.availableCars[this.currentDisplayedCarIndex].seats.find( seat => {
                     return seat.number === seatNumber;
                 });
 
-                if (!seat.selected) {
-                    // TODO: request la backend
-                    seat.selected = true;
-                    this.ownSelectedSeats.push(seat);
-                } else {
-                    // TODO: request la backend
-                    seat.selected = false;
-                    console.log(seat._id);
+                try {
 
-                    const index = this.ownSelectedSeats.findIndex(s => s._id === seat._id);
-                    this.ownSelectedSeats.splice(index, 1);
+                    if (!seat.selected) {
+                        console.log('SELECT');
+
+                        await SeatService.selectSeat(seat._id);
+
+                        this.selectedSeatsTimers[seat._id] = setInterval(
+                            SeatService.selectSeat,
+                            CONSTANTS.SEAT_SELECTION_REFRESH_TIMEOUT,
+                            seat._id
+                        );
+
+                        this.ownSelectedSeats.push(seat);
+
+                    } else if (seat.selectingUser === this.$store.getters.getUser._id) {
+                        console.log('DESELECT');
+                        clearInterval(this.selectedSeatsTimers[seat._id]);
+                        delete this.selectedSeatsTimers[seat._id];
+
+                        const index = this.ownSelectedSeats.findIndex(s => s._id === seat._id);
+                        this.ownSelectedSeats.splice(index, 1);
+
+                        await SeatService.deselectSeat(seat._id);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    this.$emit('serverError', error.response.data.err.message);
                 }
 
-                let seatOfCarLayout =
-                    this.availableCars[this.currentDisplayedCarIndex].carLayout.elements.find( elem => {
-                        return elem.seatNumber === seatNumber;
-                    });
+                await this.updateAvailableCarsAndCurrentDisplayedCarLayout();
 
-                if (seat.selected) {
-                    seatOfCarLayout.type = CarLayoutService.getSelectedSeatTypeFromUnselected(seatOfCarLayout.type);
-                } else {
-                    seatOfCarLayout.type = CarLayoutService.getUnselectedSeatTypeFromSelected(seatOfCarLayout.type);
-                }
-
-                this.updateCurrentDisplayedCarLayout();
+                this.toggleSeatsLock = false;
             },
 
-            updateCurrentDisplayedCarLayout() {
+            async updateAvailableCarsAndCurrentDisplayedCarLayout() {
 
-                let displayedCarLayout = JSON.parse(JSON.stringify(
+                this.ride = await RideService.getRideByDetails(this.detailsFromQuery);
+
+                this.availableCars = RideService.getCarsContainingSourceDestination(
+                    this.ride,
+                    this.departureStation._id,
+                    this.destinationStation._id
+                );
+
+                let carLayoutWithFreeSeats = JSON.parse(JSON.stringify(
                     this.availableCars[this.currentDisplayedCarIndex].carLayout
                 ));
 
-                displayedCarLayout = CarLayoutService.transformFromMongo2FrontendModel(displayedCarLayout);
+                carLayoutWithFreeSeats = CarLayoutService.transformFromMongo2FrontendModel(carLayoutWithFreeSeats);
 
                 if (this.$vuetify.breakpoint.xsOnly) {
-                    displayedCarLayout = CarLayoutService.rotateCarLayout(displayedCarLayout);
+                    carLayoutWithFreeSeats = CarLayoutService.rotateCarLayout(carLayoutWithFreeSeats);
                 }
+
+                const currentCar = JSON.parse(JSON.stringify(
+                    this.availableCars[this.currentDisplayedCarIndex]
+                ));
+
+                currentCar.carLayout = carLayoutWithFreeSeats;
 
                 const departureRouteStation = this.ride.routeStations.find(routeStation => {
                     return routeStation.station._id === this.departureStation._id;
@@ -355,14 +397,8 @@
                     return routeStation.station._id === this.destinationStation._id;
                 });
 
-                const currentCar = JSON.parse(JSON.stringify(
-                    this.availableCars[this.currentDisplayedCarIndex]
-                ));
-
-                currentCar.carLayout = displayedCarLayout;
-
-                this.currentDisplayedCarLayout = CarLayoutService.fillCarLayoutWithReservedSeats(
-                    currentCar, departureRouteStation, arrivalRouteStation, this.ownSelectedSeats
+                this.currentDisplayedCarLayout = CarLayoutService.fillCarLayoutWithColorfulSeats(
+                    currentCar, departureRouteStation, arrivalRouteStation, this.$store.getters.getUser
                 );
             }
         }
