@@ -123,6 +123,7 @@ module.exports = {
 
                 let ticketPrice = Config.kmPrice * (arrivalRouteStation.distance - departureRouteStation.distance);
                 ticketPrice *= 1 - travelerCategory.discount / 100;
+                ticketPrice = parseFloat(ticketPrice.toFixed(2));
                 totalPrice += ticketPrice;
 
                 ticket = {

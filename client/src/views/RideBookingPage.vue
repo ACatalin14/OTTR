@@ -108,10 +108,6 @@
                                         </v-btn>
                                     </v-col>
                                 </v-row>
-
-                                <v-row no-gutters justify="center">
-
-                                </v-row>
                             </v-col>
                             <v-spacer></v-spacer>
                         </v-row>
@@ -150,15 +146,25 @@
                     </v-stepper-content>
                     <v-stepper-content :step="formHeaderSteps[2].orderNo">
                         <ConfirmationBookingStep
+                            :paypal-props="paypalData"
                             :available-cars="availableCars"
                             :tickets="requestedTickets"
+                            :ride="ride"
+                            :departure-station="departureStation"
+                            :destination-station="destinationStation"
+                            :departure-time-text="departureTimeText"
+                            :arrival-time-text="arrivalTimeText"
+                            :ride-date="rideDateString"
                             @nextBookingStep="onNextBookingStep"
                             @previousBookingStep="onPreviousBookingStep"
+                            @paymentCompleted="onPaymentCompleted"
                         >
                         </ConfirmationBookingStep>
                     </v-stepper-content>
                     <v-stepper-content :step="formHeaderSteps[3].orderNo">
-
+                        <v-row no-gutters v-if="finishedOrder">
+                            Good Job! You order #{{ finishedOrder.number }} has been placed successfully.
+                        </v-row>
                     </v-stepper-content>
                 </v-stepper-items>
             </v-stepper>
@@ -173,6 +179,7 @@
     import CarLayoutService from "../services/carLayoutService";
     import SeatService from "../services/seatService";
     import ConfigService from "../services/configService";
+    import OrderTicketService from "../services/orderTicketService";
     import GrayContainer from "../components/GrayContainer";
     import CarLayoutWithSelectableSeats from "../components/CarLayoutWithSelectableSeats";
     import PassengerTypesFormStep from "../components/PassengerTypesFormStep";
@@ -207,6 +214,21 @@
                 distance: 0,
                 config: null,
                 kmPrice: 0,
+                finishedOrder: null,
+                paypalData: {
+                    paypalCredentials: {
+                        sandbox: 'AVkWHFnXdZqeisrLgPWwUDeG7xGXQ-ONQjEL_01-LMBJAm0m9QuDO4a2CXLar3Kh1gWiYBq9k4cAGa4G',
+                        production: ''
+                    },
+                    paypalButtonStyle: {
+                        label: 'paypal',
+                        size:  'responsive',
+                        shape: 'rect',
+                        color: 'silver',
+                        tagline: false
+                    },
+                    items: []
+                },
                 formHeaderSteps: [
                     { orderNo: 1, title: 'Pick Your Seats' },
                     { orderNo: 2, title: 'Passenger Types' },
@@ -330,6 +352,14 @@
             }
         },
 
+        destroyed() {
+
+            for (let timerId in this.selectedSeatsTimers) {
+                clearInterval(this.selectedSeatsTimers[timerId]);
+            }
+            this.selectedSeatsTimers = {};
+        },
+
         methods: {
             async decrementAvailableCarIfPossible() {
                 if (this.currentDisplayedCarIndex === 0) {
@@ -445,7 +475,9 @@
                 this.requestedTickets = JSON.parse(JSON.stringify(newTickets));
 
                 this.requestedTickets.forEach(t => {
-                    t.price = this.kmPrice * this.distance * (1 - t.passengerType.discount / 100);
+                    if (t.passengerType) {
+                        t.price = this.kmPrice * this.distance * (1 - t.passengerType.discount / 100);
+                    }
                 });
             },
 
@@ -457,6 +489,38 @@
             onPreviousBookingStep() {
 
                 this.currentStepperStep--;
+            },
+
+            async onPaymentCompleted() {
+
+                let orderDetails = {
+                    rideId: this.ride._id,
+                    departureStationId: this.departureStation._id,
+                    arrivalStationId: this.destinationStation._id,
+                    tickets: []
+                };
+
+                for (let ticket of this.requestedTickets) {
+                    orderDetails.tickets.push({
+                        'seatId': ticket.seat._id,
+                        'travelerCategoryId': ticket.passengerType._id
+                    });
+                }
+
+                try {
+                    this.finishedOrder = await OrderTicketService.placeOrder(orderDetails);
+
+                    this.currentStepperStep++;
+
+                    for (let timerId in this.selectedSeatsTimers) {
+                        clearInterval(this.selectedSeatsTimers[timerId]);
+                    }
+                    this.selectedSeatsTimers = {};
+
+                } catch (error) {
+                    console.error(error);
+                    this.$emit('serverError', error.response.data.err.message);
+                }
             }
         }
     }
