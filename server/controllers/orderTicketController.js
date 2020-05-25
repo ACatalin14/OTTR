@@ -10,12 +10,71 @@ const ObjectId = mongoose.mongo.ObjectId;
 
 module.exports = {
     index: async (req, res) => {
-        await Order.find({}, (err, stations) => {
+        await Order.find({}, (err, orders) => {
             if (err) {
                 return res.status(500).json({err: CONSTANTS.ERRORS.OTHER});
             }
-            res.status(200).json(stations);
+            res.status(200).json(orders);
         });
+    },
+
+    /**
+     * Get details of order, completing with "train" info for each ticket
+     *
+     * @param req
+     * @param res
+     * @returns {Promise<*>}
+     */
+    getOrdersForUser: async (req, res) => {
+
+        if (!req.params.userId) {
+
+            return res.status(400).json({err: CONSTANTS.ERRORS.MISSING_IMPORTANT_ARGUMENTS});
+        }
+
+        let orders, userId = req.params.userId;
+
+        try {
+            orders = await Order.find({ user: (userId) })
+                .populate({
+                    path: 'user tickets',
+                    populate: {
+                        path: 'car departureStation arrivalStation passengerType',
+                        populate: {
+                            path: 'station travelClass'
+                        }
+                    }
+                })
+                .exec();
+
+            for (let orderInd = 0; orderInd < orders.length; orderInd++) {
+                for (let ticketInd = 0; ticketInd < orders[orderInd].tickets.length; ticketInd++) {
+                    const ticket = orders[orderInd].tickets[ticketInd];
+
+                    // get seat
+                    let seat = ticket.car.seats.find(s => JSON.stringify(s._id) === JSON.stringify(ticket.seat));
+                    orders[orderInd].tickets[ticketInd] = JSON.parse(JSON.stringify(orders[orderInd].tickets[ticketInd]),
+                        (key, val) => key === 'seat' ? seat : val
+                    );
+
+                    // get ride
+                    const route = await Route.findOne({'rides._id': ObjectId(ticket.ride)}, 'train rides').populate('train.trainCategory').exec();
+                    const rides = route.rides;
+                    const ride = rides.find(r => JSON.stringify(r._id) === JSON.stringify(ticket.ride));
+                    orders[orderInd].tickets[ticketInd] = JSON.parse(JSON.stringify(orders[orderInd].tickets[ticketInd]),
+                        (key, val) => key === 'ride' ? ride : val
+                    );
+
+                    // get train
+                    orders[orderInd].tickets[ticketInd].train = JSON.parse(JSON.stringify(route.train));
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({err: CONSTANTS.ERRORS.OTHER});
+        }
+
+        return res.status(200).json(orders);
     },
 
     /**

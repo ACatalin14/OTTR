@@ -10,6 +10,14 @@ export default {
             .catch(this.throwServerError);
     },
 
+    getOrdersForUser(userId) {
+
+        return axios
+            .get(CONSTANTS.SERVER_URL + '/order/user/' + userId)
+            .then(response => response.data)
+            .catch(this.throwServerError);
+    },
+
     throwServerError(err) {
         if (err.response) {
             throw err;

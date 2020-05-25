@@ -224,7 +224,7 @@
                 { icon: 'mdi-home', text: 'Home', route: '/' },
                 { icon: 'mdi-account', text: 'My Account', route: '/my-account', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'mdAndUp' },
                 // { icon: 'mdi-chart-areaspline', text: 'Dashboard', route: '/dashboard', displayForUserGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY },
-                // { icon: 'mdi-ticket', text: 'My Tickets', route: '/my-tickets', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED },
+                { icon: 'mdi-ticket', text: 'My Tickets', route: '/my-tickets', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED },
                 {
                     icon: 'mdi-chevron-up',
                     'icon-alt': 'mdi-chevron-down',
@@ -258,8 +258,8 @@
                 //         { icon: 'mdi-clock-outline', text: 'Departures / Arrivals Station', route: '/trains-schedule/departures-arrivals-station' },
                 //     ],
                 // },
-                { icon: 'mdi-image-multiple', text: 'Gallery', route: '/gallery' },
-                { icon: 'mdi-email', text: 'Contact', route: '/contact' },
+                // { icon: 'mdi-image-multiple', text: 'Gallery', route: '/gallery' },
+                // { icon: 'mdi-email', text: 'Contact', route: '/contact' },
             ],
         }),
         computed: {

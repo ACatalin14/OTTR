@@ -18,6 +18,7 @@ import RoutesForm from "../views/RoutesForm";
 import TheRides from "../views/TheRides";
 import RideSearchPage from "../views/RideSearchResultsPage";
 import RideBookingPage from "../views/RideBookingPage";
+import MyTickets from "../views/MyTickets";
 
 Vue.use(VueRouter);
 
@@ -36,6 +37,14 @@ const routes = [
         path: '/my-account',
         name: 'my-account',
         component: MyAccount,
+        meta: {
+            requiredAuthGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED
+        }
+    },
+    {
+        path: '/my-tickets',
+        name: 'my-tickets',
+        component: MyTickets,
         meta: {
             requiredAuthGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED
         }

@@ -5,6 +5,7 @@ const adminAuthorization = require('../middlewares/adminAuthorization.js');
 const orderTicketController = require('../controllers/orderTicketController');
 
 router.get('/', adminAuthorization, orderTicketController.index);
+router.get('/user/:userId', authorize, orderTicketController.getOrdersForUser);
 router.post('/', authorize, orderTicketController.placeOrder);
 
 module.exports = router;
