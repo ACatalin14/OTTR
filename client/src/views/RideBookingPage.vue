@@ -163,7 +163,24 @@
                     </v-stepper-content>
                     <v-stepper-content :step="formHeaderSteps[3].orderNo">
                         <v-row no-gutters v-if="finishedOrder">
-                            Good Job! You order #{{ finishedOrder.number }} has been placed successfully.
+                            <v-col>
+                                <h3 class="headline font-weight-bold">
+                                    Thank you for choosing OTTR!
+                                </h3>
+                                <p class="mt-4" style="max-width: 600px">
+                                    You order <strong>#{{ finishedOrder.number }}</strong> has been placed successfully and we've sent you
+                                    an SMS with the tickets' details at the phone number provided in your account
+                                    details.
+                                </p>
+                                <p class="mt-2" style="max-width: 600px">
+                                    Please enjoy your ride, and let us now if there's anything else you need
+                                    to know about our services by sending an e-mail to
+                                    <a href="mailto:ottr-contact@gmail.com">ottr-contact@gmail.com</a>
+                                </p>
+                                <p>
+                                    Have a nice ride!
+                                </p>
+                            </v-col>
                         </v-row>
                     </v-stepper-content>
                 </v-stepper-items>
@@ -180,6 +197,7 @@
     import SeatService from "../services/seatService";
     import ConfigService from "../services/configService";
     import OrderTicketService from "../services/orderTicketService";
+    import UserService from "../services/userService";
     import GrayContainer from "../components/GrayContainer";
     import CarLayoutWithSelectableSeats from "../components/CarLayoutWithSelectableSeats";
     import PassengerTypesFormStep from "../components/PassengerTypesFormStep";
@@ -405,6 +423,7 @@
 
                         this.requestedTickets.push({
                             seat: seat,
+                            car: JSON.parse(JSON.stringify(this.availableCars[this.currentDisplayedCarIndex])),
                             passengerType: null,
                             price: 0
                         });
@@ -477,6 +496,7 @@
                 this.requestedTickets.forEach(t => {
                     if (t.passengerType) {
                         t.price = this.kmPrice * this.distance * (1 - t.passengerType.discount / 100);
+                        t.price *= (1 - t.car.travelClass.discount / 100);
                     }
                 });
             },
@@ -508,6 +528,7 @@
                 }
 
                 try {
+                    // save order to database
                     this.finishedOrder = await OrderTicketService.placeOrder(orderDetails);
 
                     this.currentStepperStep++;
@@ -517,10 +538,60 @@
                     }
                     this.selectedSeatsTimers = {};
 
+                    // send SMS
+                    await this.sendSms();
+
                 } catch (error) {
                     console.error(error);
                     this.$emit('serverError', error.response.data.err.message);
                 }
+            },
+
+            async sendSms() {
+
+                let smsText = 'Your order #' + this.finishedOrder.number + ' for the train ' +
+                    this.ride.route.train.trainCategory.code + '-' + this.ride.route.train.number +
+                    ' with departure\'s ride on ' + this.rideDateString + ', ' + this.departureStation.name + ' (' +
+                    this.departureTimeText + ') - ' + this.destinationStation.name + ' (' + this.arrivalTimeText +
+                    ') contains the following reserved seats:\n';
+
+                // distinct car numbers
+                const carNumbers = [...new Set( this.requestedTickets.map(t => t.car.number) ) ];
+
+                for (let carNumber of carNumbers) {
+
+                    const car = this.availableCars.find(c => c.number === carNumber);
+
+                    smsText += '- Car ' + car.number + ', ';
+
+                    const seatIds = car.seats.map(s => s._id);
+                    let onlyOneSeatInCar = true;
+                    let foundFirstSeat = false;
+                    for (let ticket of this.requestedTickets) {
+                        if (seatIds.includes(ticket.seat._id)) {
+                            if (foundFirstSeat) {
+                                onlyOneSeatInCar = false;
+                            }
+                            foundFirstSeat = true;
+                        }
+                    }
+
+                    smsText += onlyOneSeatInCar ? 'Seat ' : 'Seats ';
+                    foundFirstSeat = false;
+
+                    for (let ticket of this.requestedTickets) {
+                        if (seatIds.includes(ticket.seat._id)) {
+                            smsText += foundFirstSeat ? ', ' : '';
+                            smsText += ticket.seat.number;
+                            foundFirstSeat = true;
+                        }
+                    }
+                    smsText += '\n';
+                }
+
+                smsText += '\nHave a Safe Journey,\nThe OTTR Team\n.\n.';
+
+                await UserService.sendSms(smsText);
             }
         }
     }

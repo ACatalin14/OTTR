@@ -9,6 +9,11 @@ const travelClassSchema = mongoose.Schema({
     name: {
         type: String,
         required: [true, "Please include the name"]
+    },
+    discount: {
+        type: Number,
+        required: false,
+        default: 0
     }
 });
 

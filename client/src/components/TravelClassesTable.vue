@@ -12,18 +12,25 @@
         <template #form="{ editedItem }">
             <v-container>
                 <v-row>
-                    <v-col cols="12" sm="4">
+                    <v-col cols="12" sm="3">
                         <v-text-field
                             v-model="editedItem.code"
                             label="Class Code"
                             :rules="validationRules.code"
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="12" sm="8">
+                    <v-col cols="12" sm="5">
                         <v-text-field
                             v-model="editedItem.name"
                             label="Class Name"
                             :rules="validationRules.name"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="4">
+                        <v-text-field
+                            v-model="editedItem.discount"
+                            label="Ticket Discount (%)"
+                            :rules="validationRules.discount"
                         ></v-text-field>
                     </v-col>
                 </v-row>
@@ -44,11 +51,13 @@
                 service: CrudService.getCrudServiceForResource('travel-class'),
                 headers: [
                     { text: 'Code', value: 'code', align: 'center' },
-                    { text: 'Name', value: 'name', align: 'center' }
+                    { text: 'Name', value: 'name', align: 'center' },
+                    { text: 'Ticket Discount (%)', value: 'discount', align: 'center' }
                 ],
                 defaultItem: {
                     code: '',
-                    name: ''
+                    name: '',
+                    discount: ''
                 },
                 validationRules: {
                     'code': [
@@ -59,6 +68,11 @@
                     ],
                     'name': [
                         name => !!name || 'Name is required'
+                    ],
+                    'discount': [
+                        discount => !!discount || 'Discount is required',
+                        discount => /^\d+$/.test(discount) || 'Discount must be a number',
+                        discount => (discount >= 0 && discount <= 100) || 'Discount must be between 0 and 100',
                     ]
                 }
             }

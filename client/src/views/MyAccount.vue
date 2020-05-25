@@ -36,12 +36,18 @@
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12">
-                                    <v-text-field
+                                    <vue-tel-input-vuetify
                                         v-model="editPhone"
                                         label="Phone"
                                         :rules="phoneRules"
-                                        required
-                                    ></v-text-field>
+                                        mode="international"
+                                        placeholder=""
+                                        :loading="!phoneCountriesAvailable"
+                                        :preferredCountries="['RO']"
+                                        :value="editPhone"
+                                        @country-changed="onCountryChange"
+                                    >
+                                    </vue-tel-input-vuetify>
                                 </v-col>
                                 <v-col cols="12">
                                     <v-text-field
@@ -101,9 +107,6 @@
         </v-alert>
         <v-row id="my-account-container" class="ma-0 pa-0">
             <v-col class="pa-6 pt-5">
-<!--                <h1 class="headline font-weight-black mb-4 pa-0">My Account</h1>-->
-<!--                <v-divider></v-divider>-->
-<!--                <v-card class="ma-0 mt-5 d-block pa-5 pl-6">-->
                 <v-card class="ma-0 d-block pa-5 pl-3">
                     <v-row class="ma-0 pa-0" no-gutters>
                         <v-col cols="auto" class="ma-0 pa-0 px-3" v-show="$vuetify.breakpoint.smAndUp">
@@ -206,6 +209,7 @@
                 editEmail: this.$store.getters.getUser.email,
                 editPhone: this.$store.getters.getUser.phone,
                 editPassword: '',
+                phoneCountriesAvailable: false,
                 usernameRules: [
                     name => !!name || 'Username is required',
                     name => name.length >= 3 || 'Username must have at least 3 characters'
@@ -216,7 +220,8 @@
                 ],
                 phoneRules: [
                     phone => !!phone || 'Phone number is required',
-                    phone =>  /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/g.test(phone) || 'Phone number is invalid'
+                    phone =>  /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/g.test(phone) || 'Phone number is invalid',
+                    phone => (typeof phone === 'string' && phone[0] === '+') || 'Phone number must be in international format',
                 ],
                 passwordRules: [
                     password => !password || password.length >= 6 || 'New password must have at least 6 characters'
@@ -303,6 +308,12 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+            },
+
+            onCountryChange(country) {
+
+                this.phoneCountriesAvailable = true;
+                // this.countryCode = country.dialCode;
             }
         }
     }

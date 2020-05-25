@@ -45,6 +45,14 @@ export default {
                 return 'selected-seat-up.png';
             case CONSTANTS.LAYOUT.ELEMENTS.SELECTED_SEAT_DOWN:
                 return 'selected-seat-down.png';
+            case CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_LEFT:
+                return 'reserving-seat-left.png';
+            case CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_RIGHT:
+                return 'reserving-seat-right.png';
+            case CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_UP:
+                return 'reserving-seat-up.png';
+            case CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_DOWN:
+                return 'reserving-seat-down.png';
             case CONSTANTS.LAYOUT.ELEMENTS.LUGGAGE_RACK:
                 return 'luggage-rack.png';
             case CONSTANTS.LAYOUT.ELEMENTS.TABLE:
@@ -166,6 +174,18 @@ export default {
                     case CONSTANTS.LAYOUT.ELEMENTS.SELECTED_SEAT_DOWN:
                         newElement.type = CONSTANTS.LAYOUT.ELEMENTS.SELECTED_SEAT_LEFT;
                         break;
+                    case CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_LEFT:
+                        newElement.type = CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_UP;
+                        break;
+                    case CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_UP:
+                        newElement.type = CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_RIGHT;
+                        break;
+                    case CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_RIGHT:
+                        newElement.type = CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_DOWN;
+                        break;
+                    case CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_DOWN:
+                        newElement.type = CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_LEFT;
+                        break;
                     default:
                         console.error('Unknown type for an element having a seat number!');
                 }
@@ -229,6 +249,29 @@ export default {
         return car.carLayout;
     },
 
+    changeSeatAppearance(car, seat, user) {
+
+        // search for seat in car layout
+        const index = car.carLayout.gridLayout.findIndex( elem => {
+            return elem.seatNumber === seat.number;
+        });
+
+        // check if seat is selected by our client
+        if (seat.selectingUser === user._id) {
+            car.carLayout.gridLayout[index].type = this.getSelectedSeatTypeFromUnselected(car.carLayout.gridLayout[index].type);
+            return;
+        }
+
+        if (!seat.selected) {
+            // this is a seat which has already been booked by another client
+            car.carLayout.gridLayout[index].type = this.getCorrespondingReservedSeatAppearance(car.carLayout.gridLayout[index].type);
+            return;
+        }
+
+        // someone else is selecting this seat
+        car.carLayout.gridLayout[index].type = this.getReservingSeatTypeFromUnselected(car.carLayout.gridLayout[index].type);
+    },
+
     getCorrespondingReservedSeatAppearance(initialType) {
 
         switch (initialType) {
@@ -248,23 +291,6 @@ export default {
                 console.error('Unknown seat type to make an association');
                 return null;
         }
-    },
-
-    changeSeatAppearance(car, seat, user) {
-
-        // search for seat in car layout
-        const index = car.carLayout.gridLayout.findIndex( elem => {
-            return elem.seatNumber === seat.number;
-        });
-
-        // check if seat is selected by our client
-        if (seat.selectingUser === user._id) {
-            car.carLayout.gridLayout[index].type = this.getSelectedSeatTypeFromUnselected(car.carLayout.gridLayout[index].type);
-            return;
-        }
-
-        // this is a seat which is selected by another client
-        car.carLayout.gridLayout[index].type = this.getCorrespondingReservedSeatAppearance(car.carLayout.gridLayout[index].type);
     },
 
     getSelectedSeatTypeFromUnselected(elementType) {
@@ -288,23 +314,23 @@ export default {
         }
     },
 
-    getUnselectedSeatTypeFromSelected(elementType) {
+    getReservingSeatTypeFromUnselected(elementType) {
 
         switch (elementType) {
-            case CONSTANTS.LAYOUT.ELEMENTS.SELECTED_SEAT_LEFT:
-                return CONSTANTS.LAYOUT.ELEMENTS.SEAT_LEFT;
+            case CONSTANTS.LAYOUT.ELEMENTS.SEAT_LEFT:
+                return CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_LEFT;
 
-            case CONSTANTS.LAYOUT.ELEMENTS.SELECTED_SEAT_RIGHT:
-                return CONSTANTS.LAYOUT.ELEMENTS.SEAT_RIGHT;
+            case CONSTANTS.LAYOUT.ELEMENTS.SEAT_RIGHT:
+                return CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_RIGHT;
 
-            case CONSTANTS.LAYOUT.ELEMENTS.SELECTED_SEAT_UP:
-                return CONSTANTS.LAYOUT.ELEMENTS.SEAT_UP;
+            case CONSTANTS.LAYOUT.ELEMENTS.SEAT_UP:
+                return CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_UP;
 
-            case CONSTANTS.LAYOUT.ELEMENTS.SELECTED_SEAT_DOWN:
-                return CONSTANTS.LAYOUT.ELEMENTS.SEAT_DOWN;
+            case CONSTANTS.LAYOUT.ELEMENTS.SEAT_DOWN:
+                return CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_DOWN;
 
             default:
-                console.error('This is not a selected seat!');
+                console.error('This is not a seat selected by someone else!');
                 return null;
         }
     }

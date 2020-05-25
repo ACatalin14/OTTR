@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import Vuetify from 'vuetify/lib';
+import Vuetify, { VTextField, VSelect } from 'vuetify/lib';
 
 const MY_ICONS = {
     home: 'mdi-home'
@@ -25,6 +25,9 @@ const opts = {
         }
     }
 };
+
+Vue.component('v-text-field', VTextField);
+Vue.component('v-select', VSelect);
 
 Vue.use(Vuetify);
 

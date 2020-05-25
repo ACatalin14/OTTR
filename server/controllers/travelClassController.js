@@ -32,7 +32,8 @@ module.exports = {
     create: async (req, res) => {
         const travelClass = {
             code: req.body.code,
-            name: req.body.name
+            name: req.body.name,
+            discount: req.body.discount
         };
 
         await TravelClass.create(travelClass, (err, createdTravelClass) => {
@@ -46,7 +47,8 @@ module.exports = {
     update: async (req, res) => {
         const newTravelClassFields = {
             code: req.body.code,
-            name: req.body.name
+            name: req.body.name,
+            discount: req.body.discount
         };
 
         await TravelClass.updateOne(

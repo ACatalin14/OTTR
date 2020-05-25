@@ -15,6 +15,7 @@ const CONSTANTS = {
             WALL: 7
         }
     },
+    // TODO: change this time for production mode
     SEAT_SELECTION_TIMEOUT: 10 * 1000,     // 15 mins to keep "reserved" a seat for booking purposes
     ERRORS: {
         OTHER: {
@@ -129,6 +130,14 @@ const CONSTANTS = {
             code: 1023,
             message: 'Seat to preserve was not found.'
         },
+        UNAUTHENTICATED_USER: {
+            code: 1024,
+            message: 'User not authenticated'
+        },
+        CANNOT_SEND_SMS: {
+            code: 1025,
+            message: 'Server was unable to send sms to the user\'s phone number'
+        }
     }
 };
 

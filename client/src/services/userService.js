@@ -16,6 +16,15 @@ export default {
             .catch(this.throwServerError);
     },
 
+    // send SMS to the already authenticated user
+    sendSms(text) {
+
+        return axios
+            .post(CONSTANTS.SERVER_URL + '/user/sms/', { text: text })
+            .then(response => response.data)
+            .catch(this.throwServerError);
+    },
+
     throwServerError(err) {
         if (err.response) {
             throw err;

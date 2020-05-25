@@ -32,13 +32,18 @@
                                 placeholder="Enter your e-mail"
                             ></v-text-field>
 
-                            <v-text-field
+                            <vue-tel-input-vuetify
                                 v-model="phone"
-                                :rules="phoneRules"
                                 label="Phone Number"
-                                color="primary"
-                                placeholder="Enter your contact no"
-                            ></v-text-field>
+                                :rules="phoneRules"
+                                :inputOptions="{ showDialCode: true, tabindex: 0 }"
+                                mode="international"
+                                placeholder=""
+                                :loading="!phoneCountriesAvailable"
+                                :preferredCountries="['RO']"
+                                @country-changed="phoneCountriesAvailable = true"
+                            >
+                            </vue-tel-input-vuetify>
 
                             <v-text-field
                                 v-model="password"
@@ -74,10 +79,11 @@
                 valid: true,
                 username: '',
                 email: '',
-                phone: '',
+                phone: null,
                 password: '',
                 showPassword: false,
                 showPasswordRepeat: false,
+                phoneCountriesAvailable: false,
                 usernameRules: [
                     name => !!name || 'Username is required',
                     name => name.length >= 3 || 'Username must have at least 3 characters'

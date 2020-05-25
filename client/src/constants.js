@@ -19,7 +19,11 @@ const LAYOUT_ELEMENTS = {
     SELECTED_SEAT_LEFT: 12,
     SELECTED_SEAT_RIGHT: 13,
     SELECTED_SEAT_UP: 14,
-    SELECTED_SEAT_DOWN: 15
+    SELECTED_SEAT_DOWN: 15,
+    RESERVING_SEAT_LEFT: 16,
+    RESERVING_SEAT_RIGHT: 17,
+    RESERVING_SEAT_UP: 18,
+    RESERVING_SEAT_DOWN: 19
 };
 
 const CONSTANTS = {
@@ -44,6 +48,7 @@ const CONSTANTS = {
         LOGIN_FAILED: 'Login failed. Please check your credentials.',
         UNREACHABLE_SERVER: 'Couldn\'t contact the server.'
     },
+    // TODO: change this time for production mode
     SEAT_SELECTION_REFRESH_TIMEOUT: 5 * 1000,      // refresh selected seats to remind server to not unselect them
     SERVER_URL: 'http://localhost:3000/api'
 };

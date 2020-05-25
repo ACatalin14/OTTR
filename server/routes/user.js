@@ -11,4 +11,6 @@ router.delete('/:id', authorize, userController.delete);
 
 router.get('/my-account', authorize, userController.getUserDetails);
 
+router.post('/sms', authorize, userController.sendSms);
+
 module.exports = router;

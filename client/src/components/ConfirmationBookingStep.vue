@@ -107,13 +107,15 @@
         props: {
             paypalProps: Object,
             availableCars: Array,
-            tickets: Array,
             ride: Object,
             departureStation: Object,
             destinationStation: Object,
             departureTimeText: String,
             arrivalTimeText: String,
-            rideDate: String
+            rideDate: String,
+
+            // Array of objects: {seat: {MongoDb ObjectScheme}, car: {Mongo ObjectScheme}, passengerType: {Obj}, price: 200}
+            tickets: Array
         },
         data() {
             return {
@@ -134,7 +136,7 @@
 
             paypalItems() {
                 const description = 'Tickets for ride: ' + this.departureStation.name + ' (' + this.departureTimeText +
-                    ') - ' + this.destinationStation.name + ' (' + this.arrivalTimeText + ') with departure from ' +
+                    ') - ' + this.destinationStation.name + ' (' + this.arrivalTimeText + ') with departure on ' +
                     this.rideDate;
 
                 return [{

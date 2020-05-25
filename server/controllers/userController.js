@@ -1,6 +1,12 @@
 const CONSTANTS = require('../constants');
+const Secret = require('../secret');
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
+const Nexmo = require('nexmo');
+const nexmo = new Nexmo({
+    apiKey: 'bbf587f5',
+    apiSecret: Secret.nexmoApiSecret,
+});
 
 module.exports = {
     login: async (req, res) => {
@@ -114,5 +120,31 @@ module.exports = {
         } catch (err) {
             res.status(500).json({ err: CONSTANTS.ERRORS.OTHER });
         }
+    },
+
+    sendSms: async (req, res) => {
+
+        if (!req.userData || !req.userData.phone) {
+
+            return res.status(400).json({ err: CONSTANTS.ERRORS.UNAUTHENTICATED_USER });
+        }
+
+        if (!req.body.text) {
+
+            return res.status(400).json({ err: CONSTANTS.ERRORS.MISSING_IMPORTANT_ARGUMENTS });
+        }
+
+        const from = 'Vonage APIs';
+        const to = req.userData.phone;
+        const text = req.body.text;
+
+        try {
+            await nexmo.message.sendSms(from, to, text);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ err: CONSTANTS.ERRORS.CANNOT_SEND_SMS });
+        }
+
+        return res.status(200).json(true);
     }
 };

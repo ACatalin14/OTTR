@@ -34,7 +34,7 @@
                     transition="scale-transition"
                     :width=" item.w * carLayout.cellSize + gridMargin * (item.w - 1) "
                     :height=" item.h * carLayout.cellSize + gridMargin * (item.h - 1) "
-                    :class="{ 'hoverable-item': item.seatNumber && !isReserved(item.type) }"
+                    :class="{ 'hoverable-item': item.seatNumber && !isReserved(item.type) && !isReserving(item.type) }"
                     @click="toggleSeat(item)"
                 >
                     <div
@@ -83,7 +83,7 @@
                     return;
                 }
 
-                if (this.isReserved(seatItem.type)) {
+                if (this.isReserved(seatItem.type) || this.isReserving(seatItem.type)) {
                     return;
                 }
 
@@ -97,6 +97,16 @@
                     CONSTANTS.LAYOUT.ELEMENTS.RESERVED_SEAT_RIGHT,
                     CONSTANTS.LAYOUT.ELEMENTS.RESERVED_SEAT_UP,
                     CONSTANTS.LAYOUT.ELEMENTS.RESERVED_SEAT_DOWN
+                ].includes(elementType);
+            },
+
+            isReserving(elementType) {
+
+                return [
+                    CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_LEFT,
+                    CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_RIGHT,
+                    CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_UP,
+                    CONSTANTS.LAYOUT.ELEMENTS.RESERVING_SEAT_DOWN
                 ].includes(elementType);
             }
         }
