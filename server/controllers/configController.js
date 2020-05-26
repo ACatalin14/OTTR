@@ -33,8 +33,8 @@ module.exports = {
         }
 
         const config = {
-            kmPrice: 2.45,
-            lastOrderNumber: 10000
+            kmPrice: 0.13,
+            lastOrderNumber: 14297
         };
 
         await Config.create(config, (err) => {

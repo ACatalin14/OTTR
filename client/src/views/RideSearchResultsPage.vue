@@ -40,8 +40,6 @@
             </v-col>
         </v-row>
 
-
-
         <RideCardSearchResult
             v-for="ride in rides"
             :key="ride._id"

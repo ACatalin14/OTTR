@@ -7,6 +7,7 @@
         :service="service"
         :default-item="defaultItem"
         :validation-rules="validationRules"
+        :items-per-page="5"
         @serverError="onServerError"
     >
         <template #form="{ editedItem }">

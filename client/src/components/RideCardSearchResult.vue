@@ -50,8 +50,9 @@
                     </v-row>
                 </v-card-text>
                 <v-divider></v-divider>
-                <v-row no-gutters v-if="showRouteStations" class="mt-4 mx-5 mb-2">
-                    <v-col>
+                <v-expand-transition>
+                    <v-row no-gutters v-show="showRouteStations">
+                    <v-col class="mt-4 mx-5 mb-2">
                         <v-stepper
                             v-if="showVerticalStepperRouteStations()"
                             vertical
@@ -93,6 +94,7 @@
                         </v-stepper>
                     </v-col>
                 </v-row>
+                </v-expand-transition>
                 <v-card-actions class="mt-1">
                     <v-spacer></v-spacer>
                     <v-btn

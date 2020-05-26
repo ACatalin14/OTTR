@@ -162,7 +162,7 @@ module.exports = {
             ridesDateFrom.getMonth() === todayDepDateTime.getMonth() &&
             ridesDateFrom.getFullYear() === todayDepDateTime.getFullYear()
         ) {
-            if (ridesDateFrom < todayDepDateTime && activeWeekDays.includes(todayDepDateTime.getDay() + 1)) {
+            if (ridesDateFrom < todayDepDateTime && activeWeekDays.includes(todayDepDateTime.getDay())) {
 
                 const dayDiff = arrivalTime.getDate() - departureTime.getDate();
                 const todayArrDateTime = new Date(todayDepDateTime);
@@ -186,7 +186,7 @@ module.exports = {
 
         while (currentDepDate < ridesUntilDate && noOfRides > 0) {
 
-            if (activeWeekDays.includes( currentDepDate.getDay() + 1 )) {
+            if (activeWeekDays.includes( currentDepDate.getDay() )) {
 
                 const dayDiff = arrivalTime.getDate() - departureTime.getDate();
                 const currentArrDate = new Date(currentDepDate);

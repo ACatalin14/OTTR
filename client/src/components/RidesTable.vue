@@ -50,7 +50,7 @@
                                         </v-btn>
                                     </div>
                                 </template>
-                                <v-card v-if="formDialog">
+                                <v-card v-if="formDialog" :loading="creatingRides">
                                     <v-form
                                         v-model="itemFormValid"
                                         ref="itemForm"
@@ -134,6 +134,7 @@
             service: RouteRideService,
             formDialog: false,
             itemFormValid: true,
+            creatingRides: false,
             generateOptions: {
                 noOfGeneratedRides: 0,
                 generateRidesFrom: null,
@@ -187,7 +188,7 @@
             async createRides() {
 
                 try {
-
+                    this.creatingRides = true;
                     await this.service.createRides(this.route._id, this.generateOptions);
 
                     await this.$store.dispatch('showNotification', {
@@ -211,6 +212,7 @@
 
             closeForm() {
                 this.formDialog = false;
+                this.creatingRides = false;
             },
 
             onChangeNoOfGeneratedRides(no) {

@@ -17,7 +17,7 @@
                 color="primary"
                 class="ma-0 mr-2"
                 outlined
-                :disabled="!routeFormValid"
+                :disabled="!routeFormValid || savingRoute"
                 @click="saveRoute()"
             >
                 <strong>Save route</strong>
@@ -34,6 +34,7 @@
                 v-if="$vuetify.breakpoint.xsOnly"
                 color="primary"
                 icon
+                :disabled="!routeFormValid || savingRoute"
                 @click="saveRoute()"
             >
                 <v-icon>mdi-content-save</v-icon>
@@ -213,6 +214,7 @@
                 arrivalDay: 1,
                 arrTimeDialog: false,
                 arrTimeText: null,
+                savingRoute: false,
                 activeDaysItems: [
                     { value: 1, text: 'Monday' },
                     { value: 2, text: 'Tuesday' },
@@ -220,7 +222,7 @@
                     { value: 4, text: 'Thursday' },
                     { value: 5, text: 'Friday' },
                     { value: 6, text: 'Saturday' },
-                    { value: 7, text: 'Sunday' },
+                    { value: 0, text: 'Sunday' },
                 ],
                 route: {
                     departureTime: null,
@@ -374,6 +376,8 @@
                         this.route.generateRidesUntil = this.route.generateRidesUntil.getTime();
                     }
 
+                    this.savingRoute = true;
+
                     if (this.editingRoute) {
                         this.route._id = this.oldDbRoute._id;
                         await this.service.update(this.route);
@@ -393,6 +397,8 @@
                     console.error(error);
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.savingRoute = false;
             },
 
             onChangeRouteStations(routeStations) {

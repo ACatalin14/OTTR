@@ -2,7 +2,30 @@
     <GrayContainer>
         <h1 class="headline font-weight-black mb-4 pa-0">My Tickets</h1>
         <v-divider></v-divider>
-        <v-row justify="space-between" class="mt-3">
+        <v-progress-linear
+            v-if="loadingOrders"
+            indeterminate
+            color="primary"
+            height="4"
+        ></v-progress-linear>
+        <v-row v-if="!myOrders.length && !loadingOrders">
+            <v-col cols="12">
+                <v-card>
+                    <v-card-title>
+                        <v-row justify="center">
+                            No Tickets Found...
+                        </v-row>
+                    </v-card-title>
+                    <v-card-subtitle class="pt-2 pb-5">
+                        <v-row justify="center">
+                            Looks like you haven't placed any order so far. <br/>
+                            You can book your seat anytime from the Home page!
+                        </v-row>
+                    </v-card-subtitle>
+                </v-card>
+            </v-col>
+        </v-row>
+        <v-row v-else justify="space-between" class="mt-3">
             <v-col cols="12">
                 <v-card
                     v-for="order in myOrders"
@@ -162,6 +185,7 @@
         data() {
             return {
                 myOrders: [],
+                loadingOrders: true
             }
         },
         async created() {
@@ -200,6 +224,8 @@
             orders.sort((a, b) => b.number - a.number);
 
             this.myOrders.splice(0, this.myOrders.length, ...orders);
+
+            this.loadingOrders = false;
         },
         methods: {
             toggleVisibilityTicketsForOrder(order) {

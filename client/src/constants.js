@@ -48,9 +48,11 @@ const CONSTANTS = {
         LOGIN_FAILED: 'Login failed. Please check your credentials.',
         UNREACHABLE_SERVER: 'Couldn\'t contact the server.'
     },
-    // TODO: change this time for production mode
-    SEAT_SELECTION_REFRESH_TIMEOUT: 5 * 1000,      // refresh selected seats to remind server to not unselect them
-    SERVER_URL: 'http://localhost:3000/api'
+
+    // refresh selected seats to remind server to not unselect them
+    SEAT_SELECTION_REFRESH_TIMEOUT: 4 * 60 * 1000,
+
+    SERVER_URL: '/api'
 };
 
 export default CONSTANTS;

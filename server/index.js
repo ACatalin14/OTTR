@@ -24,15 +24,15 @@ mongoose
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const corsConfig = function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:8080');
-    res.header('Access-Control-Allow-Credentials', true);
-    res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE,PATCH');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    next()
-};
-
-app.use(corsConfig);
+// const corsConfig = function(req, res, next) {
+//     res.header('Access-Control-Allow-Origin', 'http://localhost:8080');
+//     res.header('Access-Control-Allow-Credentials', true);
+//     res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE,PATCH');
+//     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+//     next()
+// };
+//
+// app.use(corsConfig);
 
 const router = require('./routes');
 app.use('/api', router);
@@ -42,5 +42,14 @@ if (config.shouldSeedData) {
 }
 
 configController.createIfNotCreated();
+
+// Handle production mode
+if (process.env.NODE_ENV === 'production') {
+    // Use static folder
+    app.use(express.static(__dirname + '/public/'));
+
+    // Handle SPA
+    app.get(/.*/, (req, res) => res.sendFile(__dirname + '/public/index.html'));
+}
 
 app.listen(PORT, () => console.log(`OTTR Server is listening on port ${PORT}.`));

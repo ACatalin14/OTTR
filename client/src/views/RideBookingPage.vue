@@ -62,6 +62,12 @@
                         ></v-divider>
                     </template>
                 </v-stepper-header>
+                <v-progress-linear
+                    v-show="waitingResponseFromServer"
+                    indeterminate
+                    color="primary"
+                    height="4"
+                ></v-progress-linear>
                 <v-stepper-items>
                     <v-stepper-content
                         :step="formHeaderSteps[0].orderNo"
@@ -233,6 +239,7 @@
                 config: null,
                 kmPrice: 0,
                 finishedOrder: null,
+                waitingResponseFromServer: false,
                 paypalData: {
                     paypalCredentials: {
                         sandbox: 'AVkWHFnXdZqeisrLgPWwUDeG7xGXQ-ONQjEL_01-LMBJAm0m9QuDO4a2CXLar3Kh1gWiYBq9k4cAGa4G',
@@ -411,6 +418,8 @@
 
                 try {
 
+                    this.waitingResponseFromServer = true;
+
                     if (!seat.selected) {
 
                         await SeatService.selectSeat(seat._id);
@@ -447,10 +456,13 @@
 
                 await this.updateAvailableCarsAndCurrentDisplayedCarLayout();
 
+                this.waitingResponseFromServer = false;
                 this.toggleSeatsLock = false;
             },
 
             async updateAvailableCarsAndCurrentDisplayedCarLayout() {
+
+                this.waitingResponseFromServer = true;
 
                 this.ride = await RideService.getRideByDetails(this.detailsFromQuery);
 
@@ -487,6 +499,8 @@
                 this.currentDisplayedCarLayout = CarLayoutService.fillCarLayoutWithColorfulSeats(
                     currentCar, departureRouteStation, arrivalRouteStation, this.$store.getters.getUser
                 );
+
+                this.waitingResponseFromServer = false;
             },
 
             onChangeTickets(newTickets) {
@@ -528,6 +542,8 @@
                 }
 
                 try {
+                    this.waitingResponseFromServer = true;
+
                     // save order to database
                     this.finishedOrder = await OrderTicketService.placeOrder(orderDetails);
 
@@ -545,6 +561,8 @@
                     console.error(error);
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.waitingResponseFromServer = false;
             },
 
             async sendSms() {

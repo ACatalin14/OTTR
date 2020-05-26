@@ -5,6 +5,7 @@
         :sort-by="sortDefaultBy"
         :search="searchBar"
         :no-results-text="'No ' + entityNamePlural + ' have been found'"
+        :items-per-page="itemsPerPage"
         class="elevation-3"
     >
         <template v-slot:top>
@@ -160,6 +161,10 @@
             withShowItem: {
                 type: Boolean,
                 default: false
+            },
+            itemsPerPage: {
+                type: Number,
+                default: 10
             }
         },
 

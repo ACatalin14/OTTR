@@ -15,8 +15,10 @@ const CONSTANTS = {
             WALL: 7
         }
     },
-    // TODO: change this time for production mode
-    SEAT_SELECTION_TIMEOUT: 10 * 1000,     // 15 mins to keep "reserved" a seat for booking purposes
+
+    // 5 mins to keep "reserved" a seat for booking purposes
+    SEAT_SELECTION_TIMEOUT: 5 * 60 * 1000,
+
     ERRORS: {
         OTHER: {
             code: 0,
