@@ -21,7 +21,10 @@
                 </v-row>
             </v-col>
         </v-row>
-
+        <v-progress-linear
+            v-show="searchingRides"
+            indeterminate
+        ></v-progress-linear>
         <v-row v-if="ridesNotFound">
             <v-col cols="12">
                 <v-card>
@@ -73,7 +76,8 @@
                 destinationStation: null,
                 rideDateString: "",
                 viaStation: null,
-                travelClass: null
+                travelClass: null,
+                searchingRides: true
             }
         },
 
@@ -145,6 +149,8 @@
                 this.ridesNotFound = true;
                 this.$emit('serverError', error.response.data.err.message);
             }
+
+            this.searchingRides = false;
         }
     }
 </script>

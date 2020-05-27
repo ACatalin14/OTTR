@@ -321,13 +321,19 @@
                 this.destinationStation = await StationService.getStationByCode(queryDetails.to);
                 this.rideDateString = dateFormat(new Date(queryDetails.date), 'dd mmmm yyyy');
 
-                this.departureTime = new Date(2000, 0, 1);
+                const departureDate = new Date(
+                    queryDetails.date.substr(0, 4),
+                    parseInt(queryDetails.date.substr(5, 2)) - 1,
+                    queryDetails.date.substr(8, 2)
+                );
+
+                this.departureTime = new Date(departureDate);
                 hours = queryDetails.departureTime.substr(0, 2);
                 minutes = queryDetails.departureTime.substr(3, 2);
                 this.departureTime.setHours(hours, minutes, 0, 0);
                 this.departureTimeText = dateFormat(this.departureTime, 'HH:MM');
 
-                this.arrivalTime = new Date(2000, 0, 1);
+                this.arrivalTime = new Date(departureDate);
                 hours = queryDetails.arrivalTime.substr(0, 2);
                 minutes = queryDetails.arrivalTime.substr(3, 2);
                 this.arrivalTime.setHours(hours, minutes, 0, 0);
@@ -336,9 +342,9 @@
                 this.detailsFromQuery = {
                     sourceId: this.departureStation._id,
                     destinationId: this.destinationStation._id,
-                    date: (new Date(queryDetails.date)).getTime(),
-                    departureTime: this.departureTime.getTime(),
-                    arrivalTime: this.arrivalTime.getTime(),
+                    date: departureDate.getTime(),
+                    departureTime: queryDetails.departureTime,
+                    arrivalTime: queryDetails.arrivalTime,
                 };
 
                 this.ride = await RideService.getRideByDetails(this.detailsFromQuery);

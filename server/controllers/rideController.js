@@ -84,8 +84,8 @@ module.exports = {
      *      sourceId: 5eef32f23fwef
      *      destinationId: 5e3efqfqfqqg
      *      date: 18357392579238
-     *      departureTime: 18357392579238     (e.g. 1 jan 1970 07:30)
-     *      arrivalTime: 183573925778522      (e.g. 1 jan 1970 09:34)
+     *      departureTime: "07:30"     (e.g. 1 jan 1970 07:30)
+     *      arrivalTime: "09:34"      (e.g. 1 jan 1970 09:34)
      * @param req
      * @param res
      * @returns {Promise<*>}
@@ -95,8 +95,8 @@ module.exports = {
         const sourceId = req.params.sourceId;
         const destinationId = req.params.destinationId;
         const date = parseInt(req.params.date);
-        const departureTime = parseInt(req.params.departureTime);
-        const arrivalTime = parseInt(req.params.arrivalTime);
+        const departureTime = req.params.departureTime;
+        const arrivalTime = req.params.arrivalTime;
 
         if (!sourceId || !destinationId || !date || !departureTime || !arrivalTime) {
             return res.status(400).json({err: CONSTANTS.ERRORS.MISSING_IMPORTANT_ARGUMENTS});
@@ -132,15 +132,34 @@ module.exports = {
             const departureDateTime = new Date(ride.departureDates[depStationIndex]);
             const arrivalDateTime = new Date(ride.arrivalDates[arrStationIndex]);
             const requestedDepartureDateTime = new Date(date);
-            requestedDepartureDateTime.setHours(
-                new Date(departureTime).getHours(),
-                new Date(departureTime).getMinutes()
+            requestedDepartureDateTime.setTime(
+                requestedDepartureDateTime.getTime() +
+                parseInt(departureTime.substr(0, 2)) * 60 * 60 * 1000 +
+                parseInt(departureTime.substr(3, 2)) * 60 * 1000
             );
-            const requestedArrivalTime = new Date(arrivalTime);
 
-            return departureDateTime.getTime() === requestedDepartureDateTime.getTime()
-                && arrivalDateTime.getHours() === requestedArrivalTime.getHours()
-                && arrivalDateTime.getMinutes() === requestedArrivalTime.getMinutes();
+            if (departureDateTime.getTime() !== requestedDepartureDateTime.getTime()) {
+                return false;
+            }
+
+            let hasSameArrivalDate = false;
+            const requestedArrivalTime = new Date(date);
+            requestedArrivalTime.setTime(
+                requestedArrivalTime.getTime() +
+                parseInt(arrivalTime.substr(0, 2)) * 60 * 60 * 1000 +
+                parseInt(arrivalTime.substr(3, 2)) * 60 * 1000
+            );
+
+            // assume only the next 30 days to be taken into account (a ride shouldn't even take longer than 30 days, seriously.)
+            for (let day = 0; day < 30; day++) {
+                requestedArrivalTime.setTime( requestedArrivalTime.getTime() + day * 24 * 60 * 60 * 1000 );
+                if (requestedArrivalTime.getTime() === arrivalDateTime.getTime()) {
+                    hasSameArrivalDate = true;
+                    break;
+                }
+            }
+
+            return hasSameArrivalDate;
         });
 
         if (!searchedRide) {
