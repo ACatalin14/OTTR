@@ -3,6 +3,7 @@
         :headers="tableHeaders"
         :items="items"
         :search="searchBar"
+        :loading="loadingCarLayouts"
         sort-by="name"
         class="elevation-3"
         no-results-text="No car layouts have been found"
@@ -112,6 +113,7 @@
                 { text: 'Actions', value: 'action', align: 'center', sortable: false }
             ],
             items: [],
+            loadingCarLayouts: true,
             service: CrudService.getCrudServiceForResource('car-layout')
         }),
 
@@ -135,9 +137,13 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.loadingCarLayouts = false;
             },
 
             async deleteItem (item) {
+                
+                this.loadingCarLayouts = true;
 
                 try {
                     await this.service.delete(item._id);
@@ -145,6 +151,8 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.loadingCarLayouts = false;
             },
 
             showCarLayout(carLayout) {

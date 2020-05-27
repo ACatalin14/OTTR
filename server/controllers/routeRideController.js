@@ -1,3 +1,4 @@
+const CONSTANTS = require('../constants');
 const Route = require("../models/route");
 const rideCarController = require("./rideCarController");
 const dateFormat = require('dateformat');
@@ -49,8 +50,8 @@ module.exports = {
 
             if (route.routeStations[0].station.code === sourceCode &&
                 route.routeStations[stationsCount - 1].station.code === destinationCode &&
-                dateFormat(departureDateTime, 'HH:MM') === departureTime &&
-                dateFormat(arrivalDateTime, 'HH:MM') === arrivalTime
+                dateFormat(departureDateTime, 'UTC:HH:MM') === departureTime &&
+                dateFormat(arrivalDateTime, 'UTC:HH:MM') === arrivalTime
             ) {
                 return JSON.parse(JSON.stringify(route));
             }

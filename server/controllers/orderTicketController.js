@@ -48,6 +48,9 @@ module.exports = {
                 .exec();
 
             for (let orderInd = 0; orderInd < orders.length; orderInd++) {
+
+                let orderIsAvailable = true;
+
                 for (let ticketInd = 0; ticketInd < orders[orderInd].tickets.length; ticketInd++) {
                     const ticket = orders[orderInd].tickets[ticketInd];
 
@@ -59,6 +62,13 @@ module.exports = {
 
                     // get ride
                     const route = await Route.findOne({'rides._id': ObjectId(ticket.ride)}, 'train rides').populate('train.trainCategory').exec();
+
+                    if (!route) {
+                        // route not found, so maybe the corresponding ride to this ticket got deleted
+                        orderIsAvailable = false;
+                        break;
+                    }
+
                     const rides = route.rides;
                     const ride = rides.find(r => JSON.stringify(r._id) === JSON.stringify(ticket.ride));
                     orders[orderInd].tickets[ticketInd] = JSON.parse(JSON.stringify(orders[orderInd].tickets[ticketInd]),
@@ -67,6 +77,11 @@ module.exports = {
 
                     // get train
                     orders[orderInd].tickets[ticketInd].train = JSON.parse(JSON.stringify(route.train));
+                }
+
+                if (!orderIsAvailable) {
+                    orders.splice(orderInd, 1);
+                    orderInd--;
                 }
             }
         } catch (error) {

@@ -5,7 +5,7 @@
             persistent
             max-width="600"
         >
-            <v-card>
+            <v-card :loading="savingCarLayout">
                 <v-form
                     v-model="saveLayoutFormValid"
                     ref="saveLayoutForm"
@@ -38,7 +38,6 @@
             </v-card>
         </v-dialog>
         <v-row class="ma-0 pa-0">
-
             <h1 class="headline font-weight-black mt-2 pa-0"> {{ title }} </h1>
             <v-spacer></v-spacer>
             <v-btn
@@ -80,7 +79,7 @@
         <v-divider class="my-4"></v-divider>
         <v-row>
             <v-col cols="12" md="3">
-                <v-card class="fill-height">
+                <v-card class="fill-height" :loading="editingCarLayout && loadingCarLayout">
                     <v-form
                         v-model="layoutPropFormValid"
                         ref="layoutPropForm"
@@ -117,7 +116,7 @@
                 </v-card>
             </v-col>
             <v-col cols="12" md="9">
-                <v-card class="fill-height pb-0">
+                <v-card class="fill-height pb-0" :loading="editingCarLayout && loadingCarLayout">
                     <v-form
                         v-model="elementFormValid"
                         ref="elementForm"
@@ -234,7 +233,7 @@
             </v-col>
         </v-row>
 
-        <v-card class="mt-3" style="overflow: auto">
+        <v-card class="mt-3" style="overflow: auto" :loading="editingCarLayout && loadingCarLayout">
             <v-card-title>
                 <p>Layout Result</p>
                 <v-spacer></v-spacer>
@@ -329,6 +328,8 @@
         data() {
             return {
                 service: CrudService.getCrudServiceForResource('car-layout'),
+                savingCarLayout: false,
+                loadingCarLayout: true,
                 saveLayoutDialog: false,
                 saveLayoutFormValid: true,
                 layoutPropFormValid: true,
@@ -399,6 +400,7 @@
         },
         async created() {
             if (this.$route.name === 'carLayoutsForm') {
+                this.loadingCarLayout = false;
                 return;
             }
 
@@ -425,6 +427,8 @@
                 this.$emit('serverError', error.response.data.err.message);
                 await this.$router.push({ name: 'carLayouts'});
             }
+
+            this.loadingCarLayout = false;
         },
         watch: {
             newElementWidth(newWidth) {
@@ -640,6 +644,8 @@
                         layoutToSave.elements.push(itemToSave);
                     }
 
+                    this.savingCarLayout = true;
+
                     if (this.editingCarLayout) {
                         await this.service.update(layoutToSave);
                         await this.$store.dispatch('showNotification', {
@@ -658,6 +664,8 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.savingCarLayout = false;
             },
 
             changeSaveLayoutDialogVisibility() {

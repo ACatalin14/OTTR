@@ -2,7 +2,7 @@
     <v-container fluid class="fill-height ma-0">
         <v-row justify="center" align="center" class="fill-height mx-0">
             <v-col cols="12" md="4">
-                <v-card style="border-top: solid 4px indigo">
+                <v-card style="border-top: solid 4px indigo" :loading="loggingInAccount" loader-height="3">
                     <v-card-title class="justify-center">
                         <p class="display-1">
                             Login
@@ -58,6 +58,7 @@
                 email: '',
                 password: '',
                 showPassword: false,
+                loggingInAccount: false,
                 emailRules: [
                     email => !!email || 'E-mail is required',
                     email =>  /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(email) || 'E-mail is invalid'
@@ -78,6 +79,8 @@
                         email: this.email,
                         password: this.password
                     };
+
+                    this.loggingInAccount = true;
                     const response = await AuthService.login(credentials);
 
                     const token = response.token;
@@ -89,6 +92,8 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.loggingInAccount = false;
             },
             validateForm() {
                 return this.$refs.loginForm.validate();

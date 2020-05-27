@@ -63,9 +63,8 @@
                     </template>
                 </v-stepper-header>
                 <v-progress-linear
-                    v-show="waitingResponseFromServer"
-                    indeterminate
-                    color="primary"
+                    :indeterminate="waitingResponseFromServer"
+                    :color="waitingResponseFromServer ? 'primary' : 'rgba(0, 0, 0, 0.0)'"
                     height="4"
                 ></v-progress-linear>
                 <v-stepper-items>
@@ -462,43 +461,49 @@
 
             async updateAvailableCarsAndCurrentDisplayedCarLayout() {
 
-                this.waitingResponseFromServer = true;
+                try {
+                    this.waitingResponseFromServer = true;
 
-                this.ride = await RideService.getRideByDetails(this.detailsFromQuery);
+                    this.ride = await RideService.getRideByDetails(this.detailsFromQuery);
 
-                this.availableCars = RideService.getCarsContainingSourceDestination(
-                    this.ride,
-                    this.departureStation._id,
-                    this.destinationStation._id
-                );
+                    this.availableCars = RideService.getCarsContainingSourceDestination(
+                        this.ride,
+                        this.departureStation._id,
+                        this.destinationStation._id
+                    );
 
-                let carLayoutWithFreeSeats = JSON.parse(JSON.stringify(
-                    this.availableCars[this.currentDisplayedCarIndex].carLayout
-                ));
+                    let carLayoutWithFreeSeats = JSON.parse(JSON.stringify(
+                        this.availableCars[this.currentDisplayedCarIndex].carLayout
+                    ));
 
-                carLayoutWithFreeSeats = CarLayoutService.transformFromMongo2FrontendModel(carLayoutWithFreeSeats);
+                    carLayoutWithFreeSeats = CarLayoutService.transformFromMongo2FrontendModel(carLayoutWithFreeSeats);
 
-                if (this.$vuetify.breakpoint.smAndDown) {
-                    carLayoutWithFreeSeats = CarLayoutService.rotateCarLayout(carLayoutWithFreeSeats);
+                    if (this.$vuetify.breakpoint.smAndDown) {
+                        carLayoutWithFreeSeats = CarLayoutService.rotateCarLayout(carLayoutWithFreeSeats);
+                    }
+
+                    const currentCar = JSON.parse(JSON.stringify(
+                        this.availableCars[this.currentDisplayedCarIndex]
+                    ));
+
+                    currentCar.carLayout = carLayoutWithFreeSeats;
+
+                    const departureRouteStation = this.ride.routeStations.find(routeStation => {
+                        return routeStation.station._id === this.departureStation._id;
+                    });
+
+                    const arrivalRouteStation = this.ride.routeStations.find(routeStation => {
+                        return routeStation.station._id === this.destinationStation._id;
+                    });
+
+                    this.currentDisplayedCarLayout = CarLayoutService.fillCarLayoutWithColorfulSeats(
+                        currentCar, departureRouteStation, arrivalRouteStation, this.$store.getters.getUser
+                    );
+
+                } catch (error) {
+                    console.error(error);
+                    this.$emit('serverError', error.response.data.err.message);
                 }
-
-                const currentCar = JSON.parse(JSON.stringify(
-                    this.availableCars[this.currentDisplayedCarIndex]
-                ));
-
-                currentCar.carLayout = carLayoutWithFreeSeats;
-
-                const departureRouteStation = this.ride.routeStations.find(routeStation => {
-                    return routeStation.station._id === this.departureStation._id;
-                });
-
-                const arrivalRouteStation = this.ride.routeStations.find(routeStation => {
-                    return routeStation.station._id === this.destinationStation._id;
-                });
-
-                this.currentDisplayedCarLayout = CarLayoutService.fillCarLayoutWithColorfulSeats(
-                    currentCar, departureRouteStation, arrivalRouteStation, this.$store.getters.getUser
-                );
 
                 this.waitingResponseFromServer = false;
             },

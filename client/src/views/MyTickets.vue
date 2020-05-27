@@ -190,40 +190,44 @@
         },
         async created() {
 
-            this.myOrders = await orderTicketService.getOrdersForUser(this.$store.getters.getUser._id);
-            let orders = [];
-            this.myOrders.forEach(order => orders.push(order));
+            try {
+                this.myOrders = await orderTicketService.getOrdersForUser(this.$store.getters.getUser._id);
+                let orders = [];
+                this.myOrders.forEach(order => orders.push(order));
 
-            orders.forEach(order => {
-                order.showTickets = false;
+                orders.forEach(order => {
+                    order.showTickets = false;
 
-                order.departureStation = order.tickets[0].departureStation.station.name;
-                order.arrivalStation = order.tickets[0].arrivalStation.station.name;
+                    order.departureStation = order.tickets[0].departureStation.station.name;
+                    order.arrivalStation = order.tickets[0].arrivalStation.station.name;
 
-                const indexDep = order.tickets[0].departureStation.orderNo - 1;
-                const indexArr = order.tickets[0].arrivalStation.orderNo - 1;
-                order.departureDateText = dateFormat(order.tickets[0].ride.departureDates[indexDep], 'dd mmmm yyyy (HH:MM)');
-                order.arrivalDateText = dateFormat(order.tickets[0].ride.arrivalDates[indexArr], 'dd mmmm yyyy (HH:MM)');
+                    const indexDep = order.tickets[0].departureStation.orderNo - 1;
+                    const indexArr = order.tickets[0].arrivalStation.orderNo - 1;
+                    order.departureDateText = dateFormat(order.tickets[0].ride.departureDates[indexDep], 'dd mmmm yyyy (HH:MM)');
+                    order.arrivalDateText = dateFormat(order.tickets[0].ride.arrivalDates[indexArr], 'dd mmmm yyyy (HH:MM)');
 
-                order.distance = order.tickets[0].arrivalStation.distance - order.tickets[0].departureStation.distance;
+                    order.distance = order.tickets[0].arrivalStation.distance - order.tickets[0].departureStation.distance;
 
-                const depDateFromMySource = new Date(order.tickets[0].ride.departureDates[indexDep]);
-                const arrDateToMyDestination = new Date(order.tickets[0].ride.arrivalDates[indexArr]);
-                const spentTimeMs = arrDateToMyDestination - depDateFromMySource;
-                const hours = Number.parseInt(spentTimeMs / 1000 / 60 / 60);
-                const minutes = Number.parseInt(spentTimeMs / 1000 / 60);
+                    const depDateFromMySource = new Date(order.tickets[0].ride.departureDates[indexDep]);
+                    const arrDateToMyDestination = new Date(order.tickets[0].ride.arrivalDates[indexArr]);
+                    const spentTimeMs = arrDateToMyDestination - depDateFromMySource;
+                    const hours = Number.parseInt(spentTimeMs / 1000 / 60 / 60);
+                    const minutes = Number.parseInt(spentTimeMs / 1000 / 60);
 
-                order.spentTime = hours > 0 && (minutes % 60) > 0 ? hours + ' h ' + (minutes % 60) + ' min' :
-                    hours > 0 && !(minutes % 60) ? hours + ' h' :
-                        !hours && (minutes % 60) > 0 ? (minutes % 60) + ' min' : 'IMMEDIATELY';
+                    order.spentTime = hours > 0 && (minutes % 60) > 0 ? hours + ' h ' + (minutes % 60) + ' min' :
+                        hours > 0 && !(minutes % 60) ? hours + ' h' :
+                            !hours && (minutes % 60) > 0 ? (minutes % 60) + ' min' : 'IMMEDIATELY';
 
-                order.trainName = order.tickets[0].train.trainCategory.code + '-' + order.tickets[0].train.number;
-            });
+                    order.trainName = order.tickets[0].train.trainCategory.code + '-' + order.tickets[0].train.number;
+                });
 
-            // sort in descendent order by id
-            orders.sort((a, b) => b.number - a.number);
+                // sort in descendent order by id
+                orders.sort((a, b) => b.number - a.number);
 
-            this.myOrders.splice(0, this.myOrders.length, ...orders);
+                this.myOrders.splice(0, this.myOrders.length, ...orders);
+            } catch (error) {
+                this.$emit('serverError', error.response.data.err.message);
+            }
 
             this.loadingOrders = false;
         },

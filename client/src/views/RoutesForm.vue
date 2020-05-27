@@ -42,6 +42,10 @@
         </v-row>
         <v-divider class="my-4"></v-divider>
         <v-card>
+            <v-progress-linear
+                v-if="editingRoute && loadingRouteDetails"
+                indeterminate
+            ></v-progress-linear>
             <v-tabs grow center-active>
                 <v-tab>
                     <v-icon left>mdi-clock-outline</v-icon>
@@ -215,6 +219,7 @@
                 arrTimeDialog: false,
                 arrTimeText: null,
                 savingRoute: false,
+                loadingRouteDetails: true,
                 activeDaysItems: [
                     { value: 1, text: 'Monday' },
                     { value: 2, text: 'Tuesday' },
@@ -249,6 +254,7 @@
         },
         async created() {
             if (this.$route.name === 'routesCreate') {
+                this.loadingRouteDetails = false;
                 return;
             }
 
@@ -256,7 +262,8 @@
 
                 const dateFormat = require('dateformat');
                 this.editingRoute = true;
-                this.oldDbRoute = await this.service.getByName(this.$route.params.routeName);
+                const utcRouteName = this.service.getUTCRouteName(this.$route.params.routeName);
+                this.oldDbRoute = await this.service.getByName(utcRouteName);
 
                 // Time Details
                 this.depTimeText = dateFormat(this.oldDbRoute.departureTime, 'HH:MM');
@@ -271,6 +278,8 @@
                 // Train & Car Templates
                 this.route.carTemplates = JSON.parse(JSON.stringify(this.oldDbRoute.carTemplates));
                 this.route.train = JSON.parse(JSON.stringify(this.oldDbRoute.train));
+
+                this.loadingRouteDetails = false;
             }
         },
         watch: {

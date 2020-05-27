@@ -1,6 +1,8 @@
 import axios from 'axios';
 import CONSTANTS from "../constants";
 
+const dateFormat = require('dateformat');
+
 export default {
     async index() {
         return axios
@@ -41,7 +43,7 @@ export default {
 
         let activeDays = '';
         const dateFormat = require('dateformat');
-        const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const routeStations = route.routeStations;
         const depTime = new Date(route.departureTime);
         const arrTime = new Date(route.arrivalTime);
@@ -49,8 +51,14 @@ export default {
 
         route.activeWeekDays.sort((a, b) => a - b);
 
+        // If Sunday (0) is an active day, then push it to the end od the array
+        if (route.activeWeekDays[0] === 0) {
+            route.activeWeekDays.splice(0, 1);
+            route.activeWeekDays.push(0);
+        }
+
         route.activeWeekDays.forEach( dayNumber => {
-            activeDays += daysOfWeek[dayNumber - 1] + ' ';
+            activeDays += daysOfWeek[dayNumber] + ' ';
         });
         activeDays = activeDays.slice(0, -1);
 
@@ -67,6 +75,33 @@ export default {
         };
 
         return route;
+    },
+
+    // name: GL(09:00)-BUCN(14:04)    ===>  UTC name: GL(07:00)-BUCN(12:04)
+    getUTCRouteName(name) {
+        let utcName = '';
+
+        const nameTokens = name.split(/[()-]/);
+        const sourceCode = nameTokens[0];
+        const departureTime = nameTokens[1];
+        const destinationCode = nameTokens[3];
+        const arrivalTime = nameTokens[4];
+        utcName += sourceCode + '(';
+
+        let depDate = new Date(2000, 0, 1);
+        let hours = departureTime.substr(0, 2);
+        let minutes = departureTime.substr(3, 2);
+        depDate.setHours(parseInt(hours), parseInt(minutes));
+        utcName += dateFormat(depDate, 'UTC:HH:MM');
+        utcName += ')-' + destinationCode + '(';
+
+        let arrDate = new Date(2000, 0, 1);
+        hours = arrivalTime.substr(0, 2);
+        minutes = arrivalTime.substr(3, 2);
+        arrDate.setHours(parseInt(hours), parseInt(minutes));
+        utcName += dateFormat(arrDate, 'UTC:HH:MM') + ')';
+
+        return utcName;
     },
 
     throwServerError(err) {

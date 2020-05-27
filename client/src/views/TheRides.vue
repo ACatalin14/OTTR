@@ -71,7 +71,12 @@
         },
         async mounted() {
 
-            this.route = await RouteController.getByName(this.$route.params.routeName);
+            try {
+                const utcName = RouteController.getUTCRouteName(this.$route.params.routeName);
+                this.route = await RouteController.getByName(utcName);
+            } catch (error) {
+                this.$emit('serverError', error.response.data.err.message);
+            }
         }
     }
 </script>

@@ -5,7 +5,7 @@
             persistent
             max-width="600"
         >
-            <v-card>
+            <v-card :loading="savingAccountDetails">
                 <v-form
                     v-model="editAccountFormValid"
                     ref="editAccountForm"
@@ -210,6 +210,7 @@
                 editPhone: this.$store.getters.getUser.phone,
                 editPassword: '',
                 phoneCountriesAvailable: false,
+                savingAccountDetails: false,
                 usernameRules: [
                     name => !!name || 'Username is required',
                     name => name.length >= 3 || 'Username must have at least 3 characters'
@@ -269,6 +270,7 @@
                         password: this.editPassword
                     };
 
+                    this.savingAccountDetails = true;
                     const response = await UserService.edit(newUser);
 
                     // Now we need to update the token
@@ -280,6 +282,8 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.savingAccountDetails = false;
             },
 
             changeEditAccountDialogVisibility() {

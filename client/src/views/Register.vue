@@ -2,7 +2,7 @@
     <v-container fluid class="fill-height">
         <v-row justify="center" align="center" class="fill-height mx-0">
             <v-col cols="12" md="6">
-                <v-card style="border-top: solid 4px indigo">
+                <v-card style="border-top: solid 4px indigo" :loading="registeringAccount" loader-height="3">
                     <v-card-title class="justify-center">
                         <p class="display-1">
                             Create a new account
@@ -84,6 +84,7 @@
                 showPassword: false,
                 showPasswordRepeat: false,
                 phoneCountriesAvailable: false,
+                registeringAccount: false,
                 usernameRules: [
                     name => !!name || 'Username is required',
                     name => name.length >= 3 || 'Username must have at least 3 characters'
@@ -116,6 +117,9 @@
                         password: this.password,
                         role: CONSTANTS.USER_ROLES.USER
                     };
+
+                    this.registeringAccount = true;
+
                     const response = await AuthService.register(credentials);
 
                     await this.$store.dispatch('login', { token: response.token, user: response.user });
@@ -125,6 +129,8 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message)
                 }
+
+                this.registeringAccount = false;
             },
             validateForm() {
                 return this.$refs.registerForm.validate();

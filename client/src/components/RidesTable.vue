@@ -3,6 +3,7 @@
         :headers="tableHeaders"
         :items="items"
         :search="searchBar"
+        :loading="loadingRides"
         sort-by="name"
         class="elevation-3"
         no-results-text="No rides have been found for this route"
@@ -111,6 +112,7 @@
 
 <script>
     import RouteRideService from '../services/routeRideService';
+    import RouteService from '../services/routeService';
     import RidesForm from "./RidesForm";
 
     export default {
@@ -135,6 +137,8 @@
             formDialog: false,
             itemFormValid: true,
             creatingRides: false,
+            utcRouteName: null,
+            loadingRides: true,
             generateOptions: {
                 noOfGeneratedRides: 0,
                 generateRidesFrom: null,
@@ -158,7 +162,8 @@
         methods: {
             async initialize () {
                 try {
-                    const dbItems = await this.service.getRidesForRoute(this.$route.params.routeName);
+                    this.utcRouteName = RouteService.getUTCRouteName(this.$route.params.routeName);
+                    const dbItems = await this.service.getRidesForRoute(this.utcRouteName);
                     dbItems.forEach( dbItem => {
                         this.items.push(
                             this.service.attachFrontendFields2MongoFormat(dbItem)
@@ -167,14 +172,19 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.loadingRides = false;
             },
 
             async deleteItem (item) {
 
+                this.loadingRides = true;
+
                 try {
-                    await this.service.delete(this.$route.params.routeName, item._id);
+                    this.utcRouteName = RouteService.getUTCRouteName(this.$route.params.routeName);
+                    await this.service.delete(this.utcRouteName, item._id);
                     this.items = [];
-                    const dbItems = await this.service.getRidesForRoute(this.$route.params.routeName);
+                    const dbItems = await this.service.getRidesForRoute(this.utcRouteName);
                     dbItems.forEach( dbItem => {
                         this.items.push(
                             this.service.attachFrontendFields2MongoFormat(dbItem)
@@ -183,6 +193,8 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.loadingRides = false;
             },
 
             async createRides() {
@@ -196,7 +208,7 @@
                     });
 
                     this.items = [];
-                    const dbItems = await this.service.getRidesForRoute(this.$route.params.routeName);
+                    const dbItems = await this.service.getRidesForRoute(this.utcRouteName);
                     dbItems.forEach( dbItem => {
                         this.items.push(
                             this.service.attachFrontendFields2MongoFormat(dbItem)

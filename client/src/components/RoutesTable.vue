@@ -6,6 +6,7 @@
         sort-by="name"
         class="elevation-3"
         no-results-text="No routes have been found"
+        :loading="loadingRoutes"
     >
         <template v-slot:top>
             <v-toolbar flat color="white" :class="tallToolbar">
@@ -112,7 +113,8 @@
                 { text: 'Actions', value: 'action', align: 'center', sortable: false }
             ],
             items: [],
-            service: RouteService
+            service: RouteService,
+            loadingRoutes: true
         }),
 
         computed: {
@@ -140,11 +142,14 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.loadingRoutes = false;
             },
 
             async deleteItem (item) {
 
                 try {
+                    this.loadingRoutes = true;
                     await this.service.delete(item._id);
                     this.items = [];
                     const dbItems = await this.service.index();
@@ -156,6 +161,8 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.loadingRoutes = false;
             },
 
             async goCreateNewRoute() {
