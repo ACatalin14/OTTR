@@ -6,6 +6,7 @@
         :search="searchBar"
         :no-results-text="'No ' + entityNamePlural + ' have been found'"
         :items-per-page="itemsPerPage"
+        :loading="loadingItems"
         class="elevation-3"
     >
         <template v-slot:top>
@@ -29,7 +30,7 @@
                                 <template v-slot:activator="{ on }">
                                     <v-icon color="primary" v-on="on" >mdi-plus-circle</v-icon>
                                 </template>
-                                <v-card v-if="formDialog">
+                                <v-card v-if="formDialog" :loading="savingItem">
                                     <v-form
                                         v-model="itemFormValid"
                                         ref="itemForm"
@@ -52,7 +53,14 @@
                                         <v-card-actions class="pt-0">
                                             <v-spacer></v-spacer>
                                             <v-btn color="error" text @click="close">Cancel</v-btn>
-                                            <v-btn color="primary" text :disabled="!itemFormValid" type="submit">Save</v-btn>
+                                            <v-btn
+                                                text
+                                                type="submit"
+                                                color="primary"
+                                                :disabled="!itemFormValid || savingItem"
+                                            >
+                                                Save
+                                            </v-btn>
                                         </v-card-actions>
                                     </v-form>
                                 </v-card>
@@ -172,6 +180,8 @@
             formDialog: false,
             itemFormValid: true,
             searchBar: '',
+            savingItem: false,
+            loadingItems: true,
             tableHeaders: [
                 { text: 'Actions', value: 'action', align: 'center', sortable: false }
             ],
@@ -219,6 +229,7 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+                this.loadingItems = false;
             },
 
             editItem(item) {
@@ -229,6 +240,7 @@
             },
 
             async deleteItem(item) {
+                this.loadingItems = true;
 
                 try {
                     await this.service.delete(item._id);
@@ -239,6 +251,8 @@
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message);
                 }
+
+                this.loadingItems = false;
             },
 
             close() {
@@ -257,6 +271,8 @@
                         return;
                     }
 
+                    this.savingItem = true;
+
                     if (this.editingItem) {
                         await this.service.update(this.editedItem);
                         this.$emit('updatedItem', this.editingItem);
@@ -270,6 +286,7 @@
                 }
 
                 try {
+                    this.loadingItems = true;
                     this.items = JSON.parse(JSON.stringify(
                         await this.service.index()
                     ));
@@ -277,6 +294,8 @@
                     this.$emit('serverError', error.response.data.err.message);
                 }
 
+                this.loadingItems = false;
+                this.savingItem = false;
                 this.close();
             },
 

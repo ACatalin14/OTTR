@@ -43,7 +43,7 @@
         <v-divider class="my-4"></v-divider>
         <v-card>
             <v-progress-linear
-                v-if="editingRoute && loadingRouteDetails"
+                v-if="(editingRoute && loadingRouteDetails) || savingRoute"
                 indeterminate
             ></v-progress-linear>
             <v-tabs grow center-active>

@@ -216,12 +216,6 @@ export default {
                 continue;
             }
 
-            if (seat.selected) {
-                // found a seat which selected by someone (the client or somebody else using right now the app)
-                this.changeSeatAppearance(car, seat, user);
-                continue;
-            }
-
             let conflictsWithOurRide = false;
 
             for (let ticket of seat.reservations) {
@@ -238,18 +232,22 @@ export default {
                 }
             }
 
-            if (!conflictsWithOurRide) {
-                // free seat for requested ride
+            if (conflictsWithOurRide) {
+                // this seat is already booked
+                this.changeSeatAppearanceToReserved(car, seat, user);
                 continue;
             }
 
-            this.changeSeatAppearance(car, seat, user);
+            if (seat.selected) {
+                // found a seat which is selected by someone (the client or somebody else using right now the app)
+                this.changeSeatAppearanceToSelectedOrReserving(car, seat, user);
+            }
         }
 
         return car.carLayout;
     },
 
-    changeSeatAppearance(car, seat, user) {
+    changeSeatAppearanceToSelectedOrReserving(car, seat, user) {
 
         // search for seat in car layout
         const index = car.carLayout.gridLayout.findIndex( elem => {
@@ -262,14 +260,18 @@ export default {
             return;
         }
 
-        if (!seat.selected) {
-            // this is a seat which has already been booked by another client
-            car.carLayout.gridLayout[index].type = this.getCorrespondingReservedSeatAppearance(car.carLayout.gridLayout[index].type);
-            return;
-        }
-
         // someone else is selecting this seat
         car.carLayout.gridLayout[index].type = this.getReservingSeatTypeFromUnselected(car.carLayout.gridLayout[index].type);
+    },
+
+    changeSeatAppearanceToReserved(car, seat, user) {
+
+        // search for seat in car layout
+        const index = car.carLayout.gridLayout.findIndex( elem => {
+            return elem.seatNumber === seat.number;
+        });
+
+        car.carLayout.gridLayout[index].type = this.getCorrespondingReservedSeatAppearance(car.carLayout.gridLayout[index].type);
     },
 
     getCorrespondingReservedSeatAppearance(initialType) {

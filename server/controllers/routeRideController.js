@@ -128,6 +128,7 @@ module.exports = {
      */
     calculateNextRideDates(activeWeekDays, departureTime, arrivalTime, noOfRides, ridesDateFrom, ridesUntilDate, route) {
         let rideDates = [];
+        module.exports.setDateTimezonesMethods();
 
         if (!noOfRides) {
             noOfRides = 999999;
@@ -147,17 +148,13 @@ module.exports = {
         departureTime = new Date(departureTime);
         arrivalTime = new Date(arrivalTime);
 
-        // departureTime.setFullYear( new Date().getFullYear() );
-        // departureTime.setMonth( new Date().getMonth() );
-        // departureTime.setDate( new Date().getDate() );
-        // arrivalTime.setFullYear( new Date().getFullYear() );
-        // arrivalTime.setMonth( new Date().getMonth() );
-        // arrivalTime.setDate( new Date().getDate() );
-
-
         // check if today should be included in ride dates
         let todayDepDateTime = new Date();
         todayDepDateTime.setHours(departureTime.getHours(), departureTime.getMinutes(), 0, 0);
+        if (process.env.NODE_ENV === 'production') {
+            // substract DST difference
+            todayDepDateTime.setTime( todayDepDateTime.getTime() - 60 * 60 * 1000 );
+        }
 
         if (ridesDateFrom.getDate() === todayDepDateTime.getDate() &&
             ridesDateFrom.getMonth() === todayDepDateTime.getMonth() &&
@@ -168,10 +165,16 @@ module.exports = {
                 const dayDiff = arrivalTime.getDate() - departureTime.getDate();
                 const todayArrDateTime = new Date(todayDepDateTime);
                 todayArrDateTime.setHours(arrivalTime.getHours(), arrivalTime.getMinutes(), 0, 0);
+
+                if (process.env.NODE_ENV === 'production') {
+                    // substract DST difference
+                    todayArrDateTime.setTime( todayArrDateTime.getTime() - 60 * 60 * 1000 );
+                }
+
                 todayArrDateTime.setDate(todayDepDateTime.getDate() + dayDiff);
 
-                const departureDates = module.exports.calculateDepartureDateTimesForRide(currentDepDate, route.routeStations);
-                const arrivalDates = module.exports.calculateArrivalDateTimesForRide(currentDepDate, route.routeStations);
+                const departureDates = module.exports.calculateDepartureDateTimesForRide(todayDepDateTime, route.routeStations);
+                const arrivalDates = module.exports.calculateArrivalDateTimesForRide(todayArrDateTime, route.routeStations);
                 rideDates.push({
                     departureDates: departureDates, //todayDepDateTime,
                     arrivalDates: arrivalDates // todayArrDateTime
@@ -182,8 +185,13 @@ module.exports = {
         }
 
         // search for next ride dates
+        // departureTime (2000-01-01,HH:MM) is saved in nonDST form (Daylight Saving Time) - at least when admin uses client in Romania
         let currentDepDate = new Date(ridesDateFrom);
         currentDepDate.setHours(departureTime.getHours(), departureTime.getMinutes(), 0, 0);
+        if (process.env.NODE_ENV === 'production') {
+            // substract DST difference
+            currentDepDate.setTime( currentDepDate.getTime() - 60 * 60 * 1000 );
+        }
 
         while (currentDepDate < ridesUntilDate && noOfRides > 0) {
 
@@ -192,6 +200,12 @@ module.exports = {
                 const dayDiff = arrivalTime.getDate() - departureTime.getDate();
                 const currentArrDate = new Date(currentDepDate);
                 currentArrDate.setHours(arrivalTime.getHours(), arrivalTime.getMinutes(), 0, 0);
+
+                if (process.env.NODE_ENV === 'production') {
+                    // substract DST difference
+                    currentArrDate.setTime( currentArrDate.getTime() - 60 * 60 * 1000 );
+                }
+
                 currentArrDate.setDate(currentDepDate.getDate() + dayDiff);
 
                 const departureDates = module.exports.calculateDepartureDateTimesForRide(currentDepDate, route.routeStations);
@@ -238,6 +252,11 @@ module.exports = {
             departureDateForThisStation.setDate(departureDate.getDate() + dayDiff);
             departureDateForThisStation.setHours(depTime.getHours(), depTime.getMinutes(), 0, 0);
 
+            if (process.env.NODE_ENV === 'production') {
+                // TODO: scale these date computings flows to work worldwide, taking into account the DST
+                departureDateForThisStation.setTime( departureDateForThisStation.getTime() - 60 * 60 * 1000 );
+            }
+
             departureDates.push(departureDateForThisStation);
         });
 
@@ -270,6 +289,11 @@ module.exports = {
             let arrivalDateForThisStation = new Date(departureDate);
             arrivalDateForThisStation.setDate(departureDate.getDate() + dayDiff);
             arrivalDateForThisStation.setHours(arrTime.getHours(), arrTime.getMinutes(), 0, 0);
+
+            if (process.env.NODE_ENV === 'production') {
+                // TODO: scale these date computings flows to work worldwide, taking into account the DST
+                arrivalDateForThisStation.setTime( arrivalDateForThisStation.getTime() - 60 * 60 * 1000 );
+            }
 
             arrivalDates.push(arrivalDateForThisStation);
         });
@@ -327,5 +351,18 @@ module.exports = {
         }, {new: true});
 
         return res.status(200).json(updatedRoute);
+    },
+
+    setDateTimezonesMethods() {
+
+        Date.prototype.stdTimezoneOffset = function () {
+            var jan = new Date(this.getFullYear(), 0, 1);
+            var jul = new Date(this.getFullYear(), 6, 1);
+            return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+        };
+
+        Date.prototype.isDstObserved = function () {
+            return this.getTimezoneOffset() < this.stdTimezoneOffset();
+        }
     }
 };
