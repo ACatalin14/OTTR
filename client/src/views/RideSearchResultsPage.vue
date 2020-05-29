@@ -9,15 +9,21 @@
             <v-spacer v-if="$vuetify.breakpoint.mdAndUp"></v-spacer>
             <v-col cols="12" md="auto" class="pt-0">
                 <v-row no-gutters justify-md="center">
-                    <h1 class="heading font-weight-black mt-2 pa-0">
+                    <h1 v-if="$vuetify.breakpoint.mdAndUp" class="heading font-weight-black mt-2 pa-0">
+                        <span v-html="pageTitle"></span>
+                    </h1>
+                    <h1 v-else class="headline font-weight-black mt-2 pa-0">
                         <span v-html="pageTitle"></span>
                     </h1>
                 </v-row>
             </v-col>
             <v-spacer v-if="$vuetify.breakpoint.mdAndUp"></v-spacer>
             <v-col cols="12" md="auto" class="pt-0">
-                <v-row no-gutters justify-md="end">
+                <v-row v-if="$vuetify.breakpoint.mdAndUp" no-gutters justify-md="end">
                     <h1 class="heading font-weight-black mt-2 pa-0"> {{ rideDateString }}</h1>
+                </v-row>
+                <v-row v-else no-gutters justify-md="end">
+                    <h1 class="headline font-weight-black mt-2 pa-0"> {{ rideDateString }}</h1>
                 </v-row>
             </v-col>
         </v-row>
@@ -122,7 +128,11 @@
                     null;
 
                 const today =  new Date();
-                const requestedDate = new Date(queryFilters.date);
+                const requestedDate = new Date(
+                    queryFilters.date.substr(0, 4),
+                    parseInt(queryFilters.date.substr(5, 2)) - 1,
+                    queryFilters.date.substr(8, 2)
+                );
 
                 // check if requested date is today
                 if (today.getDate() === requestedDate.getDate() &&
@@ -130,6 +140,7 @@
                     today.getFullYear() === requestedDate.getFullYear()
                 ) {
                     requestedDate.setHours(today.getHours(), today.getMinutes(), today.getSeconds(), 0);
+                    this.rideDateString = 'For the next 24h'
                 }
 
                 const filters = {

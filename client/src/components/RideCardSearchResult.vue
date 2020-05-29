@@ -4,17 +4,25 @@
             <v-card>
                 <v-card-text>
                     <v-row no-gutters>
-                        <v-col>
-                            <v-row justify="start" no-gutters>
+                        <v-col cols="12" md="4">
+                            <v-row v-if="$vuetify.breakpoint.mdAndUp" justify="start" no-gutters>
                                 <v-col cols="auto">
                                     <h2 class="title font-weight-bold">Departure</h2>
                                     <h3 class="subtitle-2 font-weight-bold">{{ departureDateText }}</h3>
                                     <h1 class="display-1 font-weight-bold">{{ departureTime }}</h1>
                                 </v-col>
                             </v-row>
+                            <v-row v-else justify="start" no-gutters>
+                                <v-col cols="auto">
+                                    <h3 class="subtitle-2 font-weight-bold"> Departure </h3>
+                                    <h2 class="title font-weight-bold"> {{ departureDateText }} - {{
+                                        departureTime }} </h2>
+
+                                </v-col>
+                            </v-row>
                         </v-col>
-                        <v-col>
-                            <v-row justify="center" no-gutters>
+                        <v-col cols="12" md="4">
+                            <v-row v-if="$vuetify.breakpoint.mdAndUp" justify="center" no-gutters>
                                 <v-col cols="auto">
                                     <v-row justify="center" no-gutters>
                                         <h1 class="headline font-weight-bold">
@@ -31,19 +39,37 @@
                                     </v-row>
                                 </v-col>
                             </v-row>
+                            <v-row v-else justify="start" no-gutters>
+                                <v-col cols="auto">
+                                    <h3 class="subtitle-2 font-weight-bold"> Arrival </h3>
+                                    <h2 class="title font-weight-bold">
+                                        {{ arrivalDateText }} - {{ arrivalTime }}
+                                    </h2>
+                                </v-col>
+                            </v-row>
                         </v-col>
-                        <v-col>
-                            <v-row justify="end" no-gutters>
+                        <v-col cols="12" md="4">
+                            <v-row v-if="$vuetify.breakpoint.mdAndUp" justify="end" no-gutters>
                                 <v-col cols="auto">
                                     <v-row justify="end" no-gutters>
                                         <h2 class="title font-weight-bold">Arrival</h2>
                                     </v-row>
                                     <v-row justify="end" no-gutters>
-                                        <h3 class="subtitle-2 font-weight-bold">{{ arrivalDate }}</h3>
+                                        <h3 class="subtitle-2 font-weight-bold">{{ arrivalDateText }}</h3>
                                     </v-row>
                                     <v-row justify="end" no-gutters>
                                         <h1 class="display-1 font-weight-bold">{{ arrivalTime }}</h1>
                                     </v-row>
+                                </v-col>
+                            </v-row>
+                            <v-row v-else justify="start" no-gutters>
+                                <v-col cols="auto">
+                                    <h3 class="subtitle-2 font-weight-bold mt-3"> Ride Details </h3>
+                                    <h2 class="title font-weight-bold"> Train {{ train }} </h2>
+                                    <h2 class="subtitle-1 font-weight-bold"> {{ distance }} Km, {{ spentTime }}</h2>
+                                    <h3 class="subtitle-1 font-weight-bold">
+                                        Services: {{ availableTravelClasses }}
+                                    </h3>
                                 </v-col>
                             </v-row>
                         </v-col>
@@ -98,6 +124,7 @@
                 <v-card-actions class="mt-1">
                     <v-spacer></v-spacer>
                     <v-btn
+                        v-if="$vuetify.breakpoint.mdAndUp"
                         color="primary"
                         class="body-1 text-capitalize px-5 mr-3"
                         outlined
@@ -106,10 +133,27 @@
                         {{ showHideRouteStationsText }}
                     </v-btn>
                     <v-btn
+                        v-else
+                        icon
+                        color="primary"
+                        @click="showRouteStations = !showRouteStations"
+                    >
+                        <v-icon>{{ showRouteStations ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                    </v-btn>
+                    <v-btn
+                        v-if="$vuetify.breakpoint.mdAndUp"
                         color="primary"
                         class="body-1 text-capitalize px-5"
                         @click="bookRide"
                     >Book this ride</v-btn>
+                    <v-btn
+                        v-else
+                        icon
+                        color="accent"
+                        @click="bookRide"
+                    >
+                        <v-icon> mdi-send </v-icon>
+                    </v-btn>
                 </v-card-actions>
             </v-card>
         </v-col>
@@ -133,7 +177,7 @@
                 departureDateText: '',
                 departureDate: null,
                 departureTime: '',
-                arrivalDate: '',
+                arrivalDateText: '',
                 arrivalTime: '',
                 distance: 0,
                 spentTime: '',
@@ -163,7 +207,7 @@
 
             this.departureDateText = dateFormat(depDateFromMySource, 'dd mmmm yyyy');
             this.departureTime = dateFormat(new Date(departureRouteStation.departureTime), 'HH:MM');
-            this.arrivalDate = dateFormat(arrDateToMyDestination, 'dd mmmm yyyy');
+            this.arrivalDateText = dateFormat(arrDateToMyDestination, 'dd mmmm yyyy');
             this.arrivalTime = dateFormat(new Date(arrivalRouteStation.arrivalTime), 'HH:MM');
 
             this.departureDate = new Date(depDateFromMySource);

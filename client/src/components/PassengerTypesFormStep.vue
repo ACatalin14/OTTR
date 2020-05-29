@@ -42,18 +42,39 @@
 
         <v-row no-gutters class="mt-7">
             <v-btn
+                v-if="$vuetify.breakpoint.smAndUp"
                 color="primary"
                 @click="goToPreviousBookingStep"
             >
                 Previous Step
             </v-btn>
+            <v-btn
+                v-else
+                icon
+                color="primary"
+                outlined
+                @click="goToPreviousBookingStep"
+            >
+                <v-icon> mdi-chevron-left </v-icon>
+            </v-btn>
             <v-spacer></v-spacer>
             <v-btn
+                v-if="$vuetify.breakpoint.smAndUp"
                 color="primary"
                 :disabled="!isFormValid"
                 @click="goToNextBookingStep"
             >
                 Next Step
+            </v-btn>
+            <v-btn
+                v-else
+                icon
+                color="primary"
+                outlined
+                :disabled="!isFormValid"
+                @click="goToNextBookingStep"
+            >
+                <v-icon> mdi-chevron-right </v-icon>
             </v-btn>
         </v-row>
     </div>

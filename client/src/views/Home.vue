@@ -23,7 +23,12 @@
                     justify="center"
                 >
                     <v-col class="text-center">
-                        <h1 class="primary--text carousel-heading">Book Your Ride</h1>
+                        <h1 v-if="$vuetify.breakpoint.smAndUp" class="primary--text carousel-heading">
+                            Book Your Ride
+                        </h1>
+                        <h1 v-else class="primary--text carousel-heading-xs">
+                            Book Your Ride
+                        </h1>
                         <p class="title primary--text font-italic font-weight-bold text--lighten-1">
                             Safe, Secure, Fast.
                             <br>There is no easier way to book your train ride other than OTTR.
@@ -32,7 +37,7 @@
                 </v-row>
             </v-carousel-item>
         </v-carousel>
-        <v-row class="px-5 mt-10 mb-5">
+        <v-row class="px-5 mt-10 mb-5 mx-0">
             <v-col cols="12" md="6">
                 <v-card max-width="450" style="border-top: solid 4px indigo; margin: auto" elevation="5">
                     <v-form
@@ -251,5 +256,9 @@
     .carousel-heading {
         font-family: "Patua One", "Roboto", serif;
         font-size: 50px;
+    }
+    .carousel-heading-xs {
+        font-family: "Patua One", "Roboto", serif;
+        font-size: 38px;
     }
 </style>

@@ -1,7 +1,10 @@
 <template>
     <div>
         <v-row no-gutters class="mb-5">
-            <h2 class="display-1 font-weight-medium">
+            <h2 v-if="$vuetify.breakpoint.smAndUp" class="display-1 font-weight-medium">
+                {{ title }}
+            </h2>
+            <h2 v-else class="headline font-weight-medium">
                 {{ title }}
             </h2>
         </v-row>
@@ -32,9 +35,18 @@
                                         </h2>
                                     </v-col>
                                 </v-row>
+                                <v-row
+                                    v-if="$vuetify.breakpoint.xsOnly"
+                                    justify="end"
+                                    no-gutters
+                                    align="center">
+                                    <h2 class="title font-weight-bold">
+                                        {{ ticket.price.toFixed(2) }} USD
+                                    </h2>
+                                </v-row>
                             </v-col>
                             <v-spacer v-if="$vuetify.breakpoint.smAndUp"></v-spacer>
-                            <v-col>
+                            <v-col v-show="$vuetify.breakpoint.smAndUp">
                                 <v-row justify="end" no-gutters>
                                     <v-col cols="auto">
                                         <v-row justify="end" no-gutters>
@@ -63,10 +75,20 @@
 
         <v-row no-gutters class="mt-7" align="center">
             <v-btn
+                v-if="$vuetify.breakpoint.smAndUp"
                 color="primary"
                 @click="goToPreviousBookingStep"
             >
                 Previous Step
+            </v-btn>
+            <v-btn
+                v-else
+                icon
+                color="primary"
+                outlined
+                @click="goToPreviousBookingStep"
+            >
+                <v-icon> mdi-chevron-left </v-icon>
             </v-btn>
             <v-spacer></v-spacer>
             <v-btn
@@ -87,7 +109,7 @@
                 :client="paypalProps.paypalCredentials"
                 env="sandbox"
                 :button-style="paypalProps.paypalButtonStyle"
-                style="width: 200px;"
+                :style="{width: $vuetify.breakpoint.smAndUp ? '200px' : '100px', 'z-index': '0'}"
                 @payment-completed="onPaymentCompleted"
                 @payment-cancelled="onPaymentCancelled"
             >

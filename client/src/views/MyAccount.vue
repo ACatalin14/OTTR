@@ -125,7 +125,17 @@
                             </v-row>
                             <v-row no-gutters class="ml-1" align="center">
                                 <v-col cols="auto">
-                                    <v-card-title class="ma-0 pl-0 display-1 font-weight-black">
+                                    <v-card-title
+                                        v-if="$vuetify.breakpoint.smAndUp"
+                                        class="ma-0 pl-0 display-1 font-weight-black"
+                                    >
+                                        <v-icon color="primary" class="mr-2 pt-1" large>mdi-account-circle</v-icon>
+                                        <span>{{ user.username }}</span>
+                                    </v-card-title>
+                                    <v-card-title
+                                        v-else
+                                        class="ma-0 pl-0 title font-weight-black"
+                                    >
                                         <v-icon color="primary" class="mr-2 pt-1" large>mdi-account-circle</v-icon>
                                         <span>{{ user.username }}</span>
                                     </v-card-title>
@@ -153,13 +163,6 @@
                             :info-value="user.phone"
                             class="mt-5"
                         ></SpecificUserInfoCard>
-<!--                        TODO: implement no of bought tickets for a user -->
-<!--                        <SpecificUserInfoCard-->
-<!--                            icon-name="mdi-ticket"-->
-<!--                            property-title="Tickets Bought"-->
-<!--                            :info-value="14"-->
-<!--                            class="mt-5"-->
-<!--                        ></SpecificUserInfoCard>-->
                     </v-col>
                     <v-col cols="12" md="6">
                         <SpecificUserInfoCard

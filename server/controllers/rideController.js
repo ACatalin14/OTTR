@@ -63,11 +63,12 @@ module.exports = {
 
             const departureDate = new Date(ride.departureDates[depStationIndex]);
             const requestedDate = new Date(date);
-            requestedDate.setHours(requestedDate.getUTCHours(), requestedDate.getUTCMinutes());
 
+            // Select all rides withing the next 24 hours
+            // if today 13:24 was selected => show rides within today (13:24) -> tomorrow (13:24)
+            // if a distant day was selected => show rides within that full day
             let nextDayAfterRequestedDate = new Date(date);
-            nextDayAfterRequestedDate.setUTCDate(nextDayAfterRequestedDate.getUTCDate() + 1);
-            nextDayAfterRequestedDate.setHours(0, 0, 0, 0);
+            nextDayAfterRequestedDate.setTime( nextDayAfterRequestedDate.getTime() + 24 * 60 * 60 * 1000 );
 
             let respectsDate = departureDate >= requestedDate && departureDate < nextDayAfterRequestedDate;
 

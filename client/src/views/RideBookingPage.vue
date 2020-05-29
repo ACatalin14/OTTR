@@ -25,13 +25,16 @@
             >
                 <v-col cols="12" md="auto" class="pt-0">
                     <h1 class="heading font-weight-black mt-2 pa-0">
-                        Book Ride
+                        Ride Booking
                     </h1>
                 </v-col>
                 <v-spacer v-if="$vuetify.breakpoint.mdAndUp"></v-spacer>
                 <v-col cols="12" md="auto" class="pt-0">
                     <v-row no-gutters justify-md="center">
-                        <h1 class="heading font-weight-black mt-2 pa-0">
+                        <h1 v-if="$vuetify.breakpoint.smAndUp" class="heading font-weight-black mt-2 pa-0">
+                            <span v-html="pageTitle"></span>
+                        </h1>
+                        <h1 v-else class="headline font-weight-black mt-2 pa-0">
                             <span v-html="pageTitle"></span>
                         </h1>
                     </v-row>
@@ -39,7 +42,12 @@
                 <v-spacer v-if="$vuetify.breakpoint.mdAndUp"></v-spacer>
                 <v-col cols="12" md="auto" class="pt-0">
                     <v-row no-gutters justify-md="end">
-                        <h1 class="heading font-weight-black mt-2 pa-0"> {{ rideDateString }}</h1>
+                        <h1 v-if="$vuetify.breakpoint.smAndUp" class="heading font-weight-black mt-2 pa-0">
+                            {{ rideDateString }}
+                        </h1>
+                        <h1 v-else class="headline font-weight-black mt-2 pa-0">
+                            {{ rideDateString }}
+                        </h1>
                     </v-row>
                 </v-col>
             </v-row>
@@ -75,7 +83,7 @@
                         <v-row no-gutters>
                             <v-spacer></v-spacer>
                             <v-col cols="auto">
-                                <v-row>
+                                <v-row :no-gutters="$vuetify.breakpoint.xsOnly">
                                     <v-col cols="auto">
                                         <v-btn
                                             icon
@@ -97,7 +105,8 @@
                                         </v-row>
                                         <v-row
                                             v-if="availableCarsExist"
-                                            no-gutters justify="center"
+                                            no-gutters
+                                            justify="center"
                                         >
                                             {{ availableCars[currentDisplayedCarIndex].travelClass.name }}
                                         </v-row>
@@ -118,7 +127,10 @@
                         </v-row>
                         <v-row no-gutters style="overflow: auto" class="mt-3">
                             <v-spacer></v-spacer>
-                            <v-col cols="auto">
+                            <v-col cols="auto" style="position: relative">
+                                <v-overlay z-index="1" opacity="0.15" :value="waitingResponseFromServer" absolute>
+                                    <v-progress-circular indeterminate size="30" width="3" color="primary"></v-progress-circular>
+                                </v-overlay>
                                 <CarLayoutWithSelectableSeats
                                     v-if="availableCarsExist"
                                     :car-layout="currentDisplayedCarLayout"
@@ -130,11 +142,22 @@
                         <v-row no-gutters class="mt-7">
                             <v-spacer></v-spacer>
                             <v-btn
+                                v-if="$vuetify.breakpoint.smAndUp"
                                 color="primary"
                                 :disabled="seatsNotPicked"
                                 @click="currentStepperStep++"
                             >
                                 Next Step
+                            </v-btn>
+                            <v-btn
+                                v-else
+                                icon
+                                color="primary"
+                                outlined
+                                :disabled="seatsNotPicked"
+                                @click="currentStepperStep++"
+                            >
+                                <v-icon> mdi-chevron-right </v-icon>
                             </v-btn>
                         </v-row>
                     </v-stepper-content>

@@ -157,7 +157,6 @@
                                                                     {{ ticket.price.toFixed(2) }} USD
                                                                 </h2>
                                                             </v-row>
-
                                                         </v-col>
                                                     </v-row>
                                                 </v-card-text>
