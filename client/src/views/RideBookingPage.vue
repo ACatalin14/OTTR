@@ -473,7 +473,9 @@
                         delete this.selectedSeatsTimers[seat._id];
 
                         const index = this.requestedTickets.findIndex(t => t.seat._id === seat._id);
-                        this.requestedTickets.splice(index, 1);
+                        if (index >= 0) {
+                            this.requestedTickets.splice(index, 1);
+                        }
 
                         await SeatService.deselectSeat(seat._id);
                     }

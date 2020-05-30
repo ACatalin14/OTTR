@@ -106,11 +106,11 @@
                             <DatePicker
                                 name="rideDateSearch"
                                 label="Departure Date"
-                                :initial-value="new Date().toISOString().substr(0, 10)"
+                                :initial-value="todayDateText"
                                 :classes="'mt-3'"
                                 prepend-icon="mdi-calendar"
                                 :inline-style="'width: 400px;'"
-                                :min-date="new Date().toISOString().substr(0, 10)"
+                                :min-date="todayDateText"
                                 @datePickerChanged="onDatePickerChanged($event)"
                             >
                             </DatePicker>
@@ -180,6 +180,7 @@
                 rideDateString: new Date().toISOString().substr(0, 10),
                 stationService: CrudService.getCrudServiceForResource('station'),
                 travelClassService: CrudService.getCrudServiceForResource('travel-class'),
+                todayDateText: new Date((new Date()).getTime() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
                 carouselItems: [
                     { path: 'carousel-img-1.png' },
                     { path: 'carousel-img-2.png' },

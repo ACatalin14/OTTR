@@ -15,7 +15,9 @@
                     <v-row justify="center" class="mt-3">
                         <v-col cols="8">
                             <v-row justify="start">
-                                <v-card-title class="display-3">Page not found</v-card-title>
+                                <v-card-title :class="[$vuetify.breakpoint.smAndUp ? 'display-3' : 'headline']">
+                                    Page not found
+                                </v-card-title>
                             </v-row>
                             <v-row justify="start">
                                 <v-card-text class="body-1">

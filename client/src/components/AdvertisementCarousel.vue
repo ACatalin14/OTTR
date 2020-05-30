@@ -34,7 +34,8 @@
                         </v-row>
                         <v-row no-gutters class="ma-0 pa-0 mt-2">
                             <v-spacer></v-spacer>
-                            <v-card-title class="pb-0 font-weight-bold">
+                            <v-card-title :class="['pb-0', 'font-weight-bold', $vuetify.breakpoint.smAndUp ? 'title'
+                            : 'subtitle-1']">
                                 {{ ad.textTitle }}
                             </v-card-title>
                             <v-spacer></v-spacer>
