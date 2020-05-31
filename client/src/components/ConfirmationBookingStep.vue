@@ -152,8 +152,8 @@
             },
 
             totalPrice() {
-
-                return this.tickets.map(t => t.price).reduce((a, b) => a + b, 0);
+                const totalPriceFloat = this.tickets.map(t => t.price).reduce((a, b) => a + b, 0);
+                return Math.round((totalPriceFloat + Number.EPSILON) * 100) / 100;
             },
 
             paypalItems() {

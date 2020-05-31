@@ -40,7 +40,7 @@ module.exports = {
 
         const rides = await module.exports.getAllRidesWithRoutes();
 
-        const filteredRides = rides.filter( (ride) => {
+        let filteredRides = rides.filter( (ride) => {
 
             const departureRouteStation = ride.routeStations.find(routeStation => {
                 return routeStation.station._id === sourceId;
@@ -74,6 +74,21 @@ module.exports = {
 
             return respectsDate &&
                 module.exports.checkRideHasWellFilteredCars(ride, sourceId, destinationId, viaStationId, travelClassId);
+        });
+
+        filteredRides.sort((ride1, ride2) => {
+            const departureRouteStation1 = ride1.routeStations.find(routeStation => {
+                return routeStation.station._id === sourceId;
+            });
+            const depStationIndex1 = departureRouteStation1.orderNo - 1;
+
+            const departureRouteStation2 = ride2.routeStations.find(routeStation => {
+                return routeStation.station._id === sourceId;
+            });
+            const depStationIndex2 = departureRouteStation2.orderNo - 1;
+
+            return new Date(ride1.departureDates[depStationIndex1]) -
+                new Date(ride2.departureDates[depStationIndex2]);
         });
 
         return res.status(200).json(filteredRides);

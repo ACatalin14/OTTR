@@ -72,7 +72,9 @@
                                         <v-card-actions class="pt-0">
                                             <v-spacer></v-spacer>
                                             <v-btn color="error" text @click="closeForm">Cancel</v-btn>
-                                            <v-btn color="primary" text :disabled="!itemFormValid" type="submit">Create</v-btn>
+                                            <v-btn color="primary" text :disabled="!itemFormValid || creatingRides" type="submit">
+                                                Create
+                                            </v-btn>
                                         </v-card-actions>
                                     </v-form>
                                 </v-card>
