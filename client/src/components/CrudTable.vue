@@ -275,10 +275,10 @@
 
                     if (this.editingItem) {
                         await this.service.update(this.editedItem);
-                        this.$emit('updatedItem', this.editingItem);
+                        this.$emit('updatedItem', this.editedItem);
                     } else {
                         await this.service.create(this.editedItem);
-                        this.$emit('createdItem', this.editingItem);
+                        this.$emit('createdItem', this.editedItem);
                     }
 
                 } catch (error) {

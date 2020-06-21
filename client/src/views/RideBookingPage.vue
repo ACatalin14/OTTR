@@ -481,7 +481,12 @@
                     }
                 } catch (error) {
                     console.error(error);
-                    this.$emit('serverError', error.response.data.err.message);
+
+                    if (error.response.data.err.code === CONSTANTS.ERRORS.SEAT_ALREADY_SELECTED.code) {
+                        this.$emit('serverError', error.response.data.err.message, 'Seat already reserved');
+                    } else {
+                        this.$emit('serverError', error.response.data.err.message);
+                    }
                 }
 
                 await this.updateAvailableCarsAndCurrentDisplayedCarLayout();

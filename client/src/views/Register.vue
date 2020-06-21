@@ -124,7 +124,7 @@
 
                     await this.$store.dispatch('login', { token: response.token, user: response.user });
 
-                    await this.$router.push('/');
+                    await this.$router.push({ name: 'my-account' });
 
                 } catch (error) {
                     this.$emit('serverError', error.response.data.err.message)

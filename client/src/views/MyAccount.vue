@@ -236,7 +236,7 @@
             userRoleString() {
                 switch (this.user.role) {
                     case CONSTANTS.USER_ROLES.ADMIN:
-                        return 'Admin';
+                        return 'Railway Administrator';
                     case CONSTANTS.USER_ROLES.USER:
                         return 'Regular User';
                     case CONSTANTS.USER_ROLES.GUEST:

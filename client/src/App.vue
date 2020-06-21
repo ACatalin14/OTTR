@@ -8,7 +8,7 @@
             <v-card>
                 <v-card-title class="headline mb-1">
                     <v-icon color="error" class="mr-2">mdi-alert</v-icon>
-                    <strong>Server Error</strong>
+                    <strong>{{ serverErrorTitle }}</strong>
                 </v-card-title>
                 <v-card-text class="body-1 py-0"> {{ serverErrorMessage }}</v-card-text>
                 <v-card-actions class="pa-0 ma-0">
@@ -29,6 +29,7 @@
             app
             color="secondary"
             height="85"
+            style="z-index: 100"
         >
             <v-row no-gutters align="center">
                 <v-col cols="4" class="ma-0 pa-0">
@@ -208,6 +209,7 @@
         data: () => ({
             serverErrorDialog: false,
             serverErrorMessage: '',
+            serverErrorTitle: 'Server Error',
             drawer: null,
             valueOfDrobdownAppBar: false,
             dropDownAppBarItems: [
@@ -223,7 +225,7 @@
                 { heading: 'General' },
                 { icon: 'mdi-home', text: 'Home', route: '/' },
                 { icon: 'mdi-account', text: 'My Account', route: '/my-account', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED, displayForScreenSize: 'mdAndUp' },
-                // { icon: 'mdi-chart-areaspline', text: 'Dashboard', route: '/dashboard', displayForUserGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY },
+                { icon: 'mdi-chart-areaspline', text: 'Dashboard', route: '/dashboard', displayForUserGroup: CONSTANTS.USER_GROUPS.ADMIN_ONLY },
                 { icon: 'mdi-ticket', text: 'My Tickets', route: '/my-tickets', displayForUserGroup: CONSTANTS.USER_GROUPS.AUTHENTICATED },
                 {
                     icon: 'mdi-chevron-up',
@@ -320,9 +322,10 @@
                 return false;
             },
 
-            onServerError(errorMessage) {
+            onServerError(errorMessage, errorTitle) {
                 this.serverErrorDialog = true;
                 this.serverErrorMessage = errorMessage;
+                this.serverErrorTitle = errorTitle ? errorTitle : 'Server Error';
             },
 
             logoutWhenRequested(dropdownMenuItem) {

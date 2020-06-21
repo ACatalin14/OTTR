@@ -46,7 +46,11 @@ const CONSTANTS = {
     },
     ERRORS: {
         LOGIN_FAILED: 'Login failed. Please check your credentials.',
-        UNREACHABLE_SERVER: 'Couldn\'t contact the server.'
+        UNREACHABLE_SERVER: 'Couldn\'t contact the server.',
+        SEAT_ALREADY_SELECTED: {
+            code: 1022,
+            message: 'Requested seat has already been selected by somebody else.'
+        },
     },
 
     // refresh selected seats to remind server to not unselect them

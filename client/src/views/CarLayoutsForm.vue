@@ -32,7 +32,13 @@
                     <v-card-actions>
                         <v-spacer></v-spacer>
                         <v-btn color="error" text @click="changeSaveLayoutDialogVisibility()">Cancel</v-btn>
-                        <v-btn color="primary" text :disabled="!saveLayoutFormValid" type="submit">Save</v-btn>
+                        <v-btn
+                            color="primary"
+                            text :disabled="!saveLayoutFormValid || savingCarLayout"
+                            type="submit"
+                        >
+                            Save
+                        </v-btn>
                     </v-card-actions>
                 </v-form>
             </v-card>
@@ -338,16 +344,16 @@
                     _id: null,
                     name: '',
                     seatingCapacity: 0,
-                    width: 50,
-                    height: 10,
-                    cellSize: 10,
+                    width: 150,
+                    height: 30,
+                    cellSize: 4,
                     lastElementId: 0,
                     gridLayout: []
                 },
                 newLayoutName: '',
                 newElementType: CONSTANTS.LAYOUT.ELEMENTS.SEAT_LEFT,
-                newElementWidth: 3,
-                newElementHeight: 3,
+                newElementWidth: 6,
+                newElementHeight: 6,
                 newElementSeatNumber: 10,
                 newElementImagePath: 'seat-left.png',
                 gridMargin: CONSTANTS.LAYOUT.GRID_MARGIN,
