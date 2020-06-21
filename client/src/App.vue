@@ -121,6 +121,7 @@
             v-model="drawer"
             :clipped="$vuetify.breakpoint.lgAndUp"
             color="primary"
+            style="z-index: 101"
             app
             dark
         >
