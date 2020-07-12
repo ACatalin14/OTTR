@@ -663,9 +663,6 @@
                     ownedSeats = ownedSeats.concat(ownedSeatsInCar);
                 }
 
-                console.log('These are your seats from previous sessions:');
-                console.log(ownedSeats);
-
                 for (let ownedSeat of ownedSeats) {
 
                     await SeatService.preserveSeat(ownedSeat.seat._id);

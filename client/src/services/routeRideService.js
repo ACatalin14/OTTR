@@ -10,9 +10,9 @@ export default {
             .catch(this.throwServerError);
     },
 
-    async createRides(routeId, creationOptions) {
+    async createRides(routeId, rideDates) {
         return axios
-            .post(CONSTANTS.SERVER_URL + '/route/' + routeId + '/rides', creationOptions)
+            .post(CONSTANTS.SERVER_URL + '/route/' + routeId + '/rides', {rideDates})
             .then(response => response.data)
             .catch(this.throwServerError);
     },

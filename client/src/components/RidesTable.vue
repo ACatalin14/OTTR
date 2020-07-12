@@ -203,7 +203,18 @@
 
                 try {
                     this.creatingRides = true;
-                    await this.service.createRides(this.route._id, this.generateOptions);
+
+                    const rideDates = this.calculateRideDates(
+                        this.route.activeWeekDays,
+                        this.route.departureTime,
+                        this.route.arrivalTime,
+                        this.generateOptions.noOfGeneratedRides,
+                        this.generateOptions.generateRidesFrom,
+                        this.generateOptions.generateRidesUntil,
+                        this.route
+                    );
+
+                    await this.service.createRides(this.route._id, rideDates);
 
                     await this.$store.dispatch('showNotification', {
                         msg: 'New Rides have been successfully created.'
@@ -243,6 +254,176 @@
 
                 this.generateOptions.generateRidesUntil = endDate ? (new Date(endDate)).getTime() : null;
             },
+
+            /**
+             * noOfRides -> generate the next daily noOfRides starting from today
+             * noOfRides + ridesDateFrom -> generate the next daily noOfRides starting from ridesDateFrom
+             * noOfRides + ridesDateUntil -> generate the next daily noOfRides starting from today until ridesDateUntil (without passing this date)
+             * noOfRides + ridesDateFrom + ridesDateUntil -> generate noOfRides rides between those dates
+             * ridesDateFrom + ridesDateUntil -> generate all daily rides from startDate until finishDate
+             * ridesDateUntil -> generate all daily rides from today until ridesDateUntil
+             *
+             * @param activeWeekDays
+             * @param departureTime
+             * @param arrivalTime
+             * @param noOfRides
+             * @param ridesDateFrom
+             * @param ridesUntilDate
+             * @param route
+             */
+            calculateRideDates(activeWeekDays, departureTime, arrivalTime, noOfRides, ridesDateFrom, ridesUntilDate, route) {
+                let rideDates = [];
+
+                if (!noOfRides) {
+                    noOfRides = 999999;
+                }
+
+                if (!ridesDateFrom) {
+                    ridesDateFrom = Date.now();
+                }
+                ridesDateFrom = new Date(ridesDateFrom);
+
+                if (!ridesUntilDate) {
+                    ridesUntilDate = new Date('1.1.9999');
+                }
+                ridesUntilDate = new Date(ridesUntilDate);
+                ridesUntilDate.setHours(23, 59, 59, 999);
+
+                departureTime = new Date(departureTime);
+                arrivalTime = new Date(arrivalTime);
+
+                // check if today should be included in ride dates
+                let todayDepDateTime = new Date();
+                todayDepDateTime.setHours(departureTime.getHours(), departureTime.getMinutes(), 0, 0);
+
+                if (ridesDateFrom.getDate() === todayDepDateTime.getDate() &&
+                    ridesDateFrom.getMonth() === todayDepDateTime.getMonth() &&
+                    ridesDateFrom.getFullYear() === todayDepDateTime.getFullYear()
+                ) {
+                    if (ridesDateFrom < todayDepDateTime && activeWeekDays.includes(todayDepDateTime.getDay())) {
+
+                        const dayDiff = arrivalTime.getDate() - departureTime.getDate();
+                        const todayArrDateTime = new Date(todayDepDateTime);
+                        todayArrDateTime.setHours(arrivalTime.getHours(), arrivalTime.getMinutes(), 0, 0);
+
+                        todayArrDateTime.setDate(todayDepDateTime.getDate() + dayDiff);
+
+                        const departureDates = this.calculateDepartureDateTimesForRide(
+                            todayDepDateTime, route.routeStations
+                        );
+                        const arrivalDates = this.calculateArrivalDateTimesForRide(
+                            todayArrDateTime, route.routeStations
+                        );
+
+                        rideDates.push({
+                            departureDates: departureDates, //todayDepDateTime,
+                            arrivalDates: arrivalDates // todayArrDateTime
+                        });
+                    }
+
+                    ridesDateFrom.setDate(ridesDateFrom.getDate() + 1);
+                }
+
+                // search for next ride dates
+                let currentDepDate = new Date(ridesDateFrom);
+                currentDepDate.setHours(departureTime.getHours(), departureTime.getMinutes(), 0, 0);
+
+                while (currentDepDate < ridesUntilDate && noOfRides > 0) {
+
+                    if (activeWeekDays.includes( currentDepDate.getDay() )) {
+
+                        const dayDiff = arrivalTime.getDate() - departureTime.getDate();
+                        const currentArrDate = new Date(currentDepDate);
+                        currentArrDate.setHours(arrivalTime.getHours(), arrivalTime.getMinutes(), 0, 0);
+
+                        currentArrDate.setDate(currentDepDate.getDate() + dayDiff);
+
+                        const departureDates = this.calculateDepartureDateTimesForRide(
+                            currentDepDate, route.routeStations
+                        );
+                        const arrivalDates = this.calculateArrivalDateTimesForRide(
+                            currentDepDate, route.routeStations
+                        );
+
+                        rideDates.push({
+                            departureDates: departureDates, //new Date(currentDepDate),
+                            arrivalDates: arrivalDates // new Date(currentArrDate)
+                        });
+
+                        noOfRides--;
+                    }
+
+                    currentDepDate.setDate(currentDepDate.getDate() + 1);
+                }
+
+                return rideDates;
+            },
+
+            /**
+             *
+             * @param depDate
+             * @param routeStations
+             * @returns {[]}
+             */
+            calculateDepartureDateTimesForRide(depDate, routeStations) {
+
+                const departureDate = new Date(depDate);
+                const departureTimes = routeStations.map(routeStation => {
+                    return new Date(routeStation.departureTime);
+                });
+
+                let departureDates = [];
+                departureTimes.forEach(depTime => {
+                    if (depTime - new Date(0) === 0) {
+                        // this is the destination station
+                        departureDates.push(new Date(0));
+                        return;
+                    }
+
+                    const dayDiff = depTime.getDate() - 1;
+
+                    let departureDateForThisStation = new Date(departureDate);
+                    departureDateForThisStation.setDate(departureDate.getDate() + dayDiff);
+                    departureDateForThisStation.setHours(depTime.getHours(), depTime.getMinutes(), 0, 0);
+
+                    departureDates.push(departureDateForThisStation);
+                });
+
+                return departureDates;
+            },
+
+            /**
+             *
+             * @param depDate
+             * @param routeStations
+             * @returns {[]}
+             */
+            calculateArrivalDateTimesForRide(depDate, routeStations) {
+
+                const departureDate = new Date(depDate);
+                const arrivalTimes = routeStations.map(routeStation => {
+                    return new Date(routeStation.arrivalTime);
+                });
+
+                let arrivalDates = [];
+                arrivalTimes.forEach(arrTime => {
+                    if (arrTime - new Date(0) === 0) {
+                        // this is the source station
+                        arrivalDates.push(new Date(0));
+                        return;
+                    }
+
+                    const dayDiff = arrTime.getDate() - 1;
+
+                    let arrivalDateForThisStation = new Date(departureDate);
+                    arrivalDateForThisStation.setDate(departureDate.getDate() + dayDiff);
+                    arrivalDateForThisStation.setHours(arrTime.getHours(), arrTime.getMinutes(), 0, 0);
+
+                    arrivalDates.push(arrivalDateForThisStation);
+                });
+
+                return arrivalDates;
+            }
         }
     }
 </script>
