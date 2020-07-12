@@ -381,6 +381,10 @@
 
                 await this.updateAvailableCarsAndCurrentDisplayedCarLayout();
 
+                // In case the user exited the app but returned in time to continue reserving the selected seats
+                // from the previous session
+                await this.recoverSelectedSeats();
+
                 // calculate distance of this ride
                 const departureRouteStation = this.ride.routeStations.find(routeStation => {
                     return routeStation.station._id === this.departureStation._id;
@@ -452,20 +456,7 @@
 
                         await SeatService.selectSeat(seat._id);
 
-                        this.selectedSeatsTimers[seat._id] = setInterval(
-                            SeatService.preserveSeat,
-                            CONSTANTS.SEAT_SELECTION_REFRESH_TIMEOUT,
-                            seat._id
-                        );
-
-                        this.requestedTickets.push({
-                            seat: seat,
-                            car: JSON.parse(JSON.stringify(this.availableCars[this.currentDisplayedCarIndex])),
-                            passengerType: null,
-                            price: 0
-                        });
-
-                        this.requestedTickets.sort((a, b) => a.seat.number - b.seat.number)
+                        this.addNewSeatToSelectedSeatsList(seat, this.availableCars[this.currentDisplayedCarIndex]);
 
                     } else if (seat.selectingUser === this.$store.getters.getUser._id) {
 
@@ -651,6 +642,54 @@
                 smsText += '\nHave a Safe Journey,\nThe OTTR Team\n.\n.';
 
                 await UserService.sendSms(smsText);
+            },
+
+            async recoverSelectedSeats() {
+
+                let ownedSeats = [];
+
+                for (let car of this.availableCars) {
+
+                    const seatsInCar = car.seats.filter( seat => {
+                        return seat.selectingUser === this.$store.getters.getUser._id;
+                    });
+
+                    let ownedSeatsInCar = seatsInCar.map(seat => ({
+                        seat: seat,
+                        car: car
+                    }));
+
+
+                    ownedSeats = ownedSeats.concat(ownedSeatsInCar);
+                }
+
+                console.log('These are your seats from previous sessions:');
+                console.log(ownedSeats);
+
+                for (let ownedSeat of ownedSeats) {
+
+                    await SeatService.preserveSeat(ownedSeat.seat._id);
+
+                    this.addNewSeatToSelectedSeatsList(ownedSeat.seat, ownedSeat.car);
+                }
+            },
+
+            addNewSeatToSelectedSeatsList(seat, car) {
+
+                this.selectedSeatsTimers[seat._id] = setInterval(
+                    SeatService.preserveSeat,
+                    CONSTANTS.SEAT_SELECTION_REFRESH_TIMEOUT,
+                    seat._id
+                );
+
+                this.requestedTickets.push({
+                    seat: seat,
+                    car: JSON.parse(JSON.stringify(car)),
+                    passengerType: null,
+                    price: 0
+                });
+
+                this.requestedTickets.sort((a, b) => a.seat.number - b.seat.number);
             }
         }
     }
