@@ -240,6 +240,9 @@ module.exports = {
                 await Car.updateOne({'seats._id': ticket.seat}, {
                     $push: {
                         'seats.$.reservations': ticket
+                    },
+                    $set: {
+                        'seats.$.selected': false
                     }
                 });
             }

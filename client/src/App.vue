@@ -87,11 +87,11 @@
                         >
                             <template v-slot:activator="{ on }">
                                 <v-btn
+                                    v-show="!userIsGuest"
                                     color="primary"
                                     dark
                                     :icon="$vuetify.breakpoint.smAndDown"
                                     v-on="on"
-                                    :hidden="userIsGuest"
                                 >
                                     <span class="text-capitalize subtitle-1 hidden-sm-and-down" style="text-transform: none !important;">
                                         Welcome, {{ $store.getters.getUser.username  }}
@@ -186,9 +186,9 @@
                 </template>
             </v-list>
         </v-navigation-drawer>
-        <v-content app id="content">
+        <v-main app id="content">
             <router-view @serverError="onServerError"></router-view>
-        </v-content>
+        </v-main>
         <v-footer app style="position: absolute" inset color="#E9E9E9" class="flex-column">
             <v-row>
                 <strong>Copyright © 2020 - Now | Catalin-Gabriel Anastasiu

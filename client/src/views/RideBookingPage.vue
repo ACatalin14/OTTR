@@ -587,7 +587,7 @@
                     this.selectedSeatsTimers = {};
 
                     // send SMS
-                    await this.sendSms();
+                    //await this.sendSms();     // uncommenting this line will enable the SMS confirmation feature
 
                 } catch (error) {
                     console.error(error);
@@ -651,7 +651,8 @@
                 for (let car of this.availableCars) {
 
                     const seatsInCar = car.seats.filter( seat => {
-                        return seat.selectingUser === this.$store.getters.getUser._id;
+                        return seat.selectingUser === this.$store.getters.getUser._id
+                            && !seat.reservations.map(res => res.order.user).includes(this.$store.getters.getUser._id);
                     });
 
                     let ownedSeatsInCar = seatsInCar.map(seat => ({
