@@ -29,6 +29,15 @@ module.exports = {
         });
     },
 
+    getByName: async (req, res) => {
+        await Station.findOne({ name: req.params.name }, (err, station) => {
+            if (err) {
+                return res.status(500).json({err: CONSTANTS.ERRORS.OTHER});
+            }
+            res.status(200).json(station);
+        });
+    },
+
     create: async (req, res) => {
         const station = {
             code: req.body.code,

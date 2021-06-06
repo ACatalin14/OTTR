@@ -203,6 +203,19 @@
 <script>
     import CONSTANTS from "./constants";
 
+    window.watsonAssistantChatOptions = {
+      integrationID: "dbe93684-1eff-47d3-b4cb-915332c5db8e", // The ID of this integration.
+      region: "eu-de", // The region your integration is hosted in.
+      serviceInstanceID: "185c464e-ffe1-4a84-8470-9864fbe11072", // The ID of your service instance.
+      onLoad: function(instance) { instance.render(); }
+    };
+
+    setTimeout(function(){
+      const t=document.createElement('script');
+      t.src="https://web-chat.global.assistant.watson.appdomain.cloud/loadWatsonAssistantChat.js";
+      document.head.appendChild(t);
+    });
+
     export default {
         props: {
             source: String,
